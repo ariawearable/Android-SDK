@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<resources>
+
+    <integer name="calibration_gestures">3</integer>
+    <integer name="calibration_iterations">5</integer>
+
+</resources>
