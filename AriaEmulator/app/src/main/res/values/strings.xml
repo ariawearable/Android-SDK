@@ -55,4 +55,10 @@
         discoverable.
     </string>
     <string name="menu_disconnect_devices">Disconnect Devices</string>
+
+    <string name="ariaGestureServiceName">Aria Gesture Service</string>
+    <string name="aria_button_down">down</string>
+    <string name="aria_button_left">enter</string>
+    <string name="aria_button_right">back</string>
+    <string name="aria_button_up">up</string>
 </resources>
