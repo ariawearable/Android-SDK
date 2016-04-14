@@ -39,7 +39,9 @@ import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 import android.widget.Toast;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 
 public class HeartRateServiceFragment extends ServiceFragment {
@@ -217,10 +219,12 @@ public class HeartRateServiceFragment extends ServiceFragment {
     mDelegate = null;
   }
 
-  @Override
-  public BluetoothGattService getBluetoothGattService() {
-    return mHeartRateService;
-  }
+	@Override
+	public List<BluetoothGattService> getBluetoothGattServices() {
+		List<BluetoothGattService> services = new ArrayList<>();
+		services.add(mHeartRateService);
+		return services;
+	}
 
   @Override
   public ParcelUuid getServiceUUID() {

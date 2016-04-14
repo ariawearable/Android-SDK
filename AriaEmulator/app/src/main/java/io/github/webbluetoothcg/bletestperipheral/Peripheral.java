@@ -43,6 +43,7 @@ import android.widget.Toast;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.UUID;
 
 import io.github.webbluetoothcg.bletestperipheral.ServiceFragment.ServiceFragmentDelegate;
@@ -59,7 +60,7 @@ public class Peripheral extends Activity implements ServiceFragmentDelegate {
     private TextView mAdvStatus;
     private TextView mConnectionStatus;
     private ServiceFragment mCurrentServiceFragment;
-    private BluetoothGattService mBluetoothGattService;
+    private List<BluetoothGattService> mBluetoothGattServices;
     private HashSet<BluetoothDevice> mBluetoothDevices;
     private BluetoothManager mBluetoothManager;
     private BluetoothAdapter mBluetoothAdapter;
@@ -226,7 +227,8 @@ public class Peripheral extends Activity implements ServiceFragmentDelegate {
             mCurrentServiceFragment = (ServiceFragment) getFragmentManager()
                     .findFragmentByTag(CURRENT_FRAGMENT_TAG);
         }
-        mBluetoothGattService = mCurrentServiceFragment.getBluetoothGattService();
+
+        mBluetoothGattServices = mCurrentServiceFragment.getBluetoothGattServices();
 
         mAdvSettings = new AdvertiseSettings.Builder()
                 .setAdvertiseMode(AdvertiseSettings.ADVERTISE_MODE_BALANCED)
@@ -280,7 +282,9 @@ public class Peripheral extends Activity implements ServiceFragmentDelegate {
         }
         // Add a service for a total of three services (Generic Attribute and Generic Access
         // are present by default).
-        mGattServer.addService(mBluetoothGattService);
+        for (BluetoothGattService service : mBluetoothGattServices) {
+            mGattServer.addService(service);
+        }
 
         if (mBluetoothAdapter.isMultipleAdvertisementSupported()) {
             mAdvertiser = mBluetoothAdapter.getBluetoothLeAdvertiser();

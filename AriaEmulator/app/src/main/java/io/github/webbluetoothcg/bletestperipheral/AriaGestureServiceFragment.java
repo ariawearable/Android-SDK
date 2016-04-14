@@ -11,6 +11,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public class AriaGestureServiceFragment extends ServiceFragment implements View.OnClickListener {
@@ -36,31 +39,41 @@ public class AriaGestureServiceFragment extends ServiceFragment implements View.
     private BluetoothGattCharacteristic mGectureCharacteristic;
 	private BluetoothGattCharacteristic mBatteryCharacteristic;
 
-    public AriaGestureServiceFragment() {
-        mGectureCharacteristic =
-                new BluetoothGattCharacteristic(ARIA_GESTURE_UUID,
-                        BluetoothGattCharacteristic.PROPERTY_READ | BluetoothGattCharacteristic.PROPERTY_NOTIFY,
-                        BluetoothGattCharacteristic.PERMISSION_READ);
+	private BluetoothGattService mCalibrationService;
 
-	    mGectureCharacteristic.addDescriptor(
-			    new BluetoothGattDescriptor(CCCD_UUID,
-					    (BluetoothGattDescriptor.PERMISSION_READ | BluetoothGattDescriptor.PERMISSION_WRITE)));
+	public AriaGestureServiceFragment() {
+		initAriaService();
+		initCalibrationService();
+	}
 
-	    mBatteryCharacteristic =
-			    new BluetoothGattCharacteristic(ARIA_BATTERY_UUID,
-					    BluetoothGattCharacteristic.PROPERTY_READ | BluetoothGattCharacteristic.PROPERTY_NOTIFY,
-					    BluetoothGattCharacteristic.PERMISSION_READ);
+	private void initAriaService() {
+		mGectureCharacteristic =
+				new BluetoothGattCharacteristic(ARIA_GESTURE_UUID,
+						BluetoothGattCharacteristic.PROPERTY_READ | BluetoothGattCharacteristic.PROPERTY_NOTIFY,
+						BluetoothGattCharacteristic.PERMISSION_READ);
 
-	    mBatteryCharacteristic.addDescriptor(
-			    new BluetoothGattDescriptor(CCCD_UUID,
-					    (BluetoothGattDescriptor.PERMISSION_READ | BluetoothGattDescriptor.PERMISSION_WRITE)));
+		mGectureCharacteristic.addDescriptor(
+				new BluetoothGattDescriptor(CCCD_UUID,
+						(BluetoothGattDescriptor.PERMISSION_READ | BluetoothGattDescriptor.PERMISSION_WRITE)));
 
-	    mAriaGestureService = new BluetoothGattService(ARIA_SERVICE_UUID,
-                BluetoothGattService.SERVICE_TYPE_PRIMARY);
-        mAriaGestureService.addCharacteristic(mGectureCharacteristic);
-	    mAriaGestureService.addCharacteristic(mBatteryCharacteristic);
+		mBatteryCharacteristic =
+				new BluetoothGattCharacteristic(ARIA_BATTERY_UUID,
+						BluetoothGattCharacteristic.PROPERTY_READ | BluetoothGattCharacteristic.PROPERTY_NOTIFY,
+						BluetoothGattCharacteristic.PERMISSION_READ);
 
-    }
+		mBatteryCharacteristic.addDescriptor(
+				new BluetoothGattDescriptor(CCCD_UUID,
+						(BluetoothGattDescriptor.PERMISSION_READ | BluetoothGattDescriptor.PERMISSION_WRITE)));
+
+		mAriaGestureService = new BluetoothGattService(ARIA_SERVICE_UUID,
+				BluetoothGattService.SERVICE_TYPE_PRIMARY);
+
+		mAriaGestureService.addCharacteristic(mGectureCharacteristic);
+		mAriaGestureService.addCharacteristic(mBatteryCharacteristic);
+	}
+
+	private void initCalibrationService() {
+	}
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -96,10 +109,12 @@ public class AriaGestureServiceFragment extends ServiceFragment implements View.
         mDelegate = null;
     }
 
-    @Override
-    public BluetoothGattService getBluetoothGattService() {
-        return mAriaGestureService;
-    }
+	@Override
+	public List<BluetoothGattService> getBluetoothGattServices() {
+		List<BluetoothGattService> services = new ArrayList<>();
+		services.add(mAriaGestureService);
+		return services;
+	}
 
     @Override
     public ParcelUuid getServiceUUID() {

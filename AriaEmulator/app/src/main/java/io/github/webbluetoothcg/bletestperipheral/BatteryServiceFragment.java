@@ -36,6 +36,8 @@ import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 import android.widget.Toast;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 
@@ -156,8 +158,10 @@ public class BatteryServiceFragment extends ServiceFragment {
 		mDelegate = null;
 	}
 
-	public BluetoothGattService getBluetoothGattService() {
-		return mBatteryService;
+	public List<BluetoothGattService> getBluetoothGattServices() {
+		List<BluetoothGattService> services = new ArrayList<>();
+		services.add(mBatteryService);
+		return services;
 	}
 
 	@Override
