@@ -111,11 +111,14 @@ public class Peripheral extends Activity implements ServiceFragmentDelegate {
             super.onConnectionStateChange(device, status, newState);
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 if (newState == BluetoothGatt.STATE_CONNECTED) {
-                    mBluetoothDevices.add(device);
+	                if (!mBluetoothDevices.contains(device)) {
+		                mBluetoothDevices.add(device);
+	                }
                     updateConnectedDevicesStatus();
                     Log.v(TAG, "Connected to device: " + device.getAddress());
                 } else if (newState == BluetoothGatt.STATE_DISCONNECTED) {
-                    mBluetoothDevices.remove(device);
+                    // TODO - properly handle disconnect
+	                //mBluetoothDevices.remove(device);
                     updateConnectedDevicesStatus();
                     Log.v(TAG, "Disconnected from device");
                 }
