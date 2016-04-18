@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
-import android.content.Context;
 import android.os.Bundle;
 import android.os.ParcelUuid;
 import android.view.LayoutInflater;
@@ -32,6 +31,7 @@ public class AriaGestureServiceFragment extends ServiceFragment implements View.
 	public final static UUID GESTURE_ITERATION_UUID = UUID.fromString("caa50005-2244-a09d-e968-5f43e74d0c5c");
 	public final static UUID GESTURE_STATUS_UUID = UUID.fromString("caa50006-2244-a09d-e968-5f43e74d0c5c");
 
+	public static final int GESTURE_HOME = 79;
 	public static final int GESTURE_BACK = 81;
     public static final int GESTURE_DOWN = 80;
     public static final int GESTURE_ENTER = 40;
@@ -43,6 +43,7 @@ public class AriaGestureServiceFragment extends ServiceFragment implements View.
     private Button mDownButton;
     private Button mEnterButton;
     private Button mBackButton;
+	private Button mHomeButton;
 
     private BluetoothGattService mAriaGestureService;
     private BluetoothGattCharacteristic mGectureCharacteristic;
@@ -161,11 +162,13 @@ public class AriaGestureServiceFragment extends ServiceFragment implements View.
         mDownButton = (Button) view.findViewById(R.id.button_down);
         mEnterButton = (Button) view.findViewById(R.id.button_enter);
         mBackButton = (Button) view.findViewById(R.id.button_back);
+	    mHomeButton = (Button) view.findViewById(R.id.button_home);
 
         mUpButton.setOnClickListener(this);
         mDownButton.setOnClickListener(this);
         mEnterButton.setOnClickListener(this);
         mBackButton.setOnClickListener(this);
+	    mHomeButton.setOnClickListener(this);
 
         return view;
     }
@@ -210,6 +213,8 @@ public class AriaGestureServiceFragment extends ServiceFragment implements View.
             mGectureCharacteristic.setValue(GESTURE_ENTER, BluetoothGattCharacteristic.FORMAT_UINT8, 0);
         } else if (v == mBackButton) {
             mGectureCharacteristic.setValue(GESTURE_BACK, BluetoothGattCharacteristic.FORMAT_UINT8, 0);
+        } else if (v == mHomeButton) {
+	        mGectureCharacteristic.setValue(GESTURE_HOME, BluetoothGattCharacteristic.FORMAT_UINT8, 0);
         }
 
         mDelegate.sendNotificationToDevices(mGectureCharacteristic);

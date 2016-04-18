@@ -22,8 +22,9 @@
 
         <Button
             android:id="@+id/button_up"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:layout_width="100dp"
+            android:layout_height="70dp"
             android:drawableStart="@drawable/ic_arrow_upward_black_24dp"
             android:text="@string/aria_button_up" />
 
@@ -35,24 +36,35 @@
 
             <Button
                 android:id="@+id/button_enter"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_margin="5dp"
+                android:layout_width="100dp"
+                android:layout_height="70dp"
                 android:drawableStart="@drawable/ic_arrow_back_black_24dp"
                 android:text="@string/aria_button_left" />
 
             <Button
                 android:id="@+id/button_down"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_margin="5dp"
+                android:layout_width="100dp"
+                android:layout_height="70dp"
                 android:drawableStart="@drawable/ic_arrow_downward_black_24dp"
                 android:text="@string/aria_button_down" />
 
             <Button
                 android:id="@+id/button_back"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_margin="5dp"
+                android:layout_width="100dp"
+                android:layout_height="70dp"
                 android:drawableStart="@drawable/ic_arrow_forward_black_24dp"
                 android:text="@string/aria_button_right" />
         </LinearLayout>
+
+        <Button
+            android:id="@+id/button_home"
+            android:layout_margin="5dp"
+            android:layout_width="100dp"
+            android:layout_height="70dp"
+            android:text="@string/aria_button_home" />
+
     </LinearLayout>
 </RelativeLayout>
