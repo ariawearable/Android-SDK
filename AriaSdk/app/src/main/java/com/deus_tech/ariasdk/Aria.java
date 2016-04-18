@@ -27,7 +27,7 @@ import java.util.List;
 public class Aria extends BroadcastReceiver implements BluetoothBroadcastListener, ConnectionGattListener, CasInitListener, ArsInitListener{
 
 
-    public final static String DEVICE_NAME = "Aria6";
+    public final static String DEVICE_NAME = "Aria7";
 
     public final static int STATUS_NONE = 1;
     public final static int STATUS_DISCOVERING = 2;

@@ -476,6 +476,7 @@ public class CalibrationBleService implements CasGattListener{
 
         }else if(_value == CalibrationBleService.GESTURE_STATUS_ERROR1){
 
+	        this.currentGestureIteration=0;
             gestureStatus = CalibrationBleService.GESTURE_STATUS_ERROR1;
 
             for(int i=0 ; i<casListeners.size() ; i++){
