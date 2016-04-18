@@ -13,6 +13,7 @@ import com.deus_tech.ariasdk.calibrationBleService.CasGattListener;
 import com.deus_tech.ariasdk.calibrationBleService.CalibrationBleService;
 
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class BluetoothGattCallback extends android.bluetooth.BluetoothGattCallback{
@@ -68,6 +69,15 @@ public class BluetoothGattCallback extends android.bluetooth.BluetoothGattCallba
         if(status == BluetoothGatt.GATT_SUCCESS){
 
             List<BluetoothGattService> services = gatt.getServices();
+//            List<BluetoothGattService> services = new ArrayList<>();
+//	        BluetoothGattService service = gatt.getService(AriaBleService.ARIA_SERVICE_UUID);
+//	        if (service != null) {
+//		        services.add(service);
+//	        }
+//	        service = gatt.getService(CalibrationBleService.CALIBRATION_SERVICE_UUID);
+//	        if (service != null) {
+//		        services.add(service);
+//	        }
 
             if(connectionListener != null){
                 connectionListener.onDeviceConnected(services);

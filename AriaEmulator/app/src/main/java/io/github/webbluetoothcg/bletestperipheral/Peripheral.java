@@ -219,16 +219,10 @@ public class Peripheral extends Activity implements ServiceFragmentDelegate {
             } else {
                 Log.wtf(TAG, "Service doesn't exist");
             }
-            getFragmentManager()
-                    .beginTransaction()
-                    .add(R.id.fragment_container, mCurrentServiceFragment, CURRENT_FRAGMENT_TAG)
-                    .commit();
         } else {
             mCurrentServiceFragment = (ServiceFragment) getFragmentManager()
                     .findFragmentByTag(CURRENT_FRAGMENT_TAG);
         }
-
-        mBluetoothGattServices = mCurrentServiceFragment.getBluetoothGattServices();
 
         mAdvSettings = new AdvertiseSettings.Builder()
                 .setAdvertiseMode(AdvertiseSettings.ADVERTISE_MODE_BALANCED)
@@ -240,6 +234,13 @@ public class Peripheral extends Activity implements ServiceFragmentDelegate {
                 .setIncludeTxPowerLevel(true)
                 .addServiceUuid(mCurrentServiceFragment.getServiceUUID())
                 .build();
+
+	    if (savedInstanceState == null) {
+		    getFragmentManager()
+				    .beginTransaction()
+				    .add(R.id.fragment_container, mCurrentServiceFragment, CURRENT_FRAGMENT_TAG)
+				    .commit();
+	    }
     }
 
     @Override
@@ -282,8 +283,15 @@ public class Peripheral extends Activity implements ServiceFragmentDelegate {
         }
         // Add a service for a total of three services (Generic Attribute and Generic Access
         // are present by default).
+	    mBluetoothGattServices = mCurrentServiceFragment.getBluetoothGattServices();
         for (BluetoothGattService service : mBluetoothGattServices) {
             mGattServer.addService(service);
+	        // TODO: async calls
+	        try {
+		        Thread.sleep(1000);
+	        } catch (InterruptedException e) {
+		        e.printStackTrace();
+	        }
         }
 
         if (mBluetoothAdapter.isMultipleAdvertisementSupported()) {
