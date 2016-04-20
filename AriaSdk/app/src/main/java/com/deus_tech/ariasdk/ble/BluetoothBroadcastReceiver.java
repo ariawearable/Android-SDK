@@ -10,6 +10,7 @@ import android.util.Log;
 import com.deus_tech.ariasdk.Aria;
 
 
+@Deprecated
 public class BluetoothBroadcastReceiver extends BroadcastReceiver{
 
 

@@ -16,6 +16,7 @@ import com.deus_tech.ariasdk.ariaBleService.AriaBleService;
 import com.deus_tech.ariasdk.ble.BluetoothBroadcastListener;
 import com.deus_tech.ariasdk.ble.BluetoothBroadcastReceiver;
 import com.deus_tech.ariasdk.ble.BluetoothGattCallback;
+import com.deus_tech.ariasdk.ble.BluetoothScan;
 import com.deus_tech.ariasdk.ble.ConnectionGattListener;
 import com.deus_tech.ariasdk.calibrationBleService.CasInitListener;
 import com.deus_tech.ariasdk.calibrationBleService.CalibrationBleService;
@@ -27,7 +28,7 @@ import java.util.List;
 public class Aria extends BroadcastReceiver implements BluetoothBroadcastListener, ConnectionGattListener, CasInitListener, ArsInitListener{
 
 
-    public final static String DEVICE_NAME = "Aria7";
+    public final static String DEVICE_NAME = "Aria6";
 
     public final static int STATUS_NONE = 1;
     public final static int STATUS_DISCOVERING = 2;
@@ -38,11 +39,12 @@ public class Aria extends BroadcastReceiver implements BluetoothBroadcastListene
 
 
     private static Aria instance;
-    private Context context;
+	private Context context;
     //bluetooth
     private BluetoothManager btManager;
     private BluetoothAdapter btAdapter;
-    private BluetoothBroadcastReceiver btBroadcastReceiver;
+	private final BluetoothScan btScan;
+    //private BluetoothBroadcastReceiver btBroadcastReceiver;
     private BluetoothDevice device;
     //gatt
     private BluetoothGatt btGatt;
@@ -106,7 +108,7 @@ public class Aria extends BroadcastReceiver implements BluetoothBroadcastListene
 
         device = null;
 
-        if(btAdapter != null && btAdapter.isEnabled() == false){
+        if (btAdapter != null && btAdapter.isEnabled() == false){
 
             IntentFilter filter = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
             context.registerReceiver(this, filter);
@@ -117,7 +119,29 @@ public class Aria extends BroadcastReceiver implements BluetoothBroadcastListene
 
         }else{
 
-            btAdapter.startDiscovery();
+	        //btAdapter.startDiscovery();
+	        btScan.startLeScan(
+			        new BluetoothScan.DiscoveryListener() {
+				        @Override
+				        public void onDeviceFound(BluetoothDevice device) {
+					        Aria.this.onDeviceFound(device);
+				        }
+
+				        @Override
+				        public void onDeviceLost(BluetoothDevice device) {
+				        }
+
+				        @Override
+				        public void onStarted() {
+					        Aria.this.onDiscoveryStarted();
+				        }
+
+				        @Override
+				        public void onFinished(ArrayList<BluetoothDevice> deviceArray) {
+					        Aria.this.onDiscoveryFinished();
+				        }
+			        }
+	        );
 
         }
 
@@ -126,7 +150,8 @@ public class Aria extends BroadcastReceiver implements BluetoothBroadcastListene
 
     public void stopDiscovery(){
 
-        btAdapter.cancelDiscovery();
+        //btAdapter.cancelDiscovery();
+	    btScan.stopLeScan();
 
     }//stopDiscovery
 
@@ -168,7 +193,8 @@ public class Aria extends BroadcastReceiver implements BluetoothBroadcastListene
 
         btManager = (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
         btAdapter = btManager.getAdapter();
-        initBtBroadcastReceiver();
+	    btScan = new BluetoothScan(btAdapter);
+        //initBtBroadcastReceiver();
         initBtGattCallback();
 
         listeners = new ArrayList<AriaConnectionListener>();
@@ -177,35 +203,35 @@ public class Aria extends BroadcastReceiver implements BluetoothBroadcastListene
     }//constructor
 
 
-    private void initBtBroadcastReceiver(){
-
-        btBroadcastReceiver = new BluetoothBroadcastReceiver();
-        btBroadcastReceiver.setListener(this);
-
-        IntentFilter filter = new IntentFilter();
-
-        //http://developer.android.com/reference/android/bluetooth/BluetoothDevice.html
-        //filter.addAction(BluetoothDevice.ACTION_ACL_CONNECTED);
-        //filter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED);
-        //filter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECT_REQUESTED);
-        filter.addAction(BluetoothDevice.ACTION_BOND_STATE_CHANGED);
-        //filter.addAction(BluetoothDevice.ACTION_CLASS_CHANGED);
-        filter.addAction(BluetoothDevice.ACTION_FOUND);
-        //filter.addAction(BluetoothDevice.ACTION_NAME_CHANGED);
-        //filter.addAction(BluetoothDevice.ACTION_PAIRING_REQUEST);
-        //filter.addAction(BluetoothDevice.ACTION_UUID);
-
-        //http://developer.android.com/reference/android/bluetooth/BluetoothAdapter.html
-        //filter.addAction(BluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED);
-        filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
-        filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED);
-        //filter.addAction(BluetoothAdapter.ACTION_LOCAL_NAME_CHANGED);
-        //filter.addAction(BluetoothAdapter.ACTION_SCAN_MODE_CHANGED);
-        //filter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
-
-        context.registerReceiver(btBroadcastReceiver, filter);
-
-    }//initBtBroadcastReceiver
+//    private void initBtBroadcastReceiver(){
+//
+//        btBroadcastReceiver = new BluetoothBroadcastReceiver();
+//        btBroadcastReceiver.setListener(this);
+//
+//        IntentFilter filter = new IntentFilter();
+//
+//        //http://developer.android.com/reference/android/bluetooth/BluetoothDevice.html
+//        //filter.addAction(BluetoothDevice.ACTION_ACL_CONNECTED);
+//        //filter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED);
+//        //filter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECT_REQUESTED);
+//        filter.addAction(BluetoothDevice.ACTION_BOND_STATE_CHANGED);
+//        //filter.addAction(BluetoothDevice.ACTION_CLASS_CHANGED);
+//        filter.addAction(BluetoothDevice.ACTION_FOUND);
+//        //filter.addAction(BluetoothDevice.ACTION_NAME_CHANGED);
+//        //filter.addAction(BluetoothDevice.ACTION_PAIRING_REQUEST);
+//        //filter.addAction(BluetoothDevice.ACTION_UUID);
+//
+//        //http://developer.android.com/reference/android/bluetooth/BluetoothAdapter.html
+//        //filter.addAction(BluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED);
+//        filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
+//        filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED);
+//        //filter.addAction(BluetoothAdapter.ACTION_LOCAL_NAME_CHANGED);
+//        //filter.addAction(BluetoothAdapter.ACTION_SCAN_MODE_CHANGED);
+//        //filter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
+//
+//        context.registerReceiver(btBroadcastReceiver, filter);
+//
+//    }//initBtBroadcastReceiver
 
 
     private void initBtGattCallback(){
