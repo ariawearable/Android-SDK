@@ -28,7 +28,8 @@ import java.util.List;
 public class Aria extends BroadcastReceiver implements BluetoothBroadcastListener, ConnectionGattListener, CasInitListener, ArsInitListener{
 
 
-    public final static String DEVICE_NAME = "Aria6";
+    public final static String DEVICE_NAME = "Aria";
+	public final static String DEVICE_PROTOCOL = "6";
 
     public final static int STATUS_NONE = 1;
     public final static int STATUS_DISCOVERING = 2;
@@ -124,7 +125,11 @@ public class Aria extends BroadcastReceiver implements BluetoothBroadcastListene
 			        new BluetoothScan.DiscoveryListener() {
 				        @Override
 				        public void onDeviceFound(BluetoothDevice device) {
-					        Aria.this.onDeviceFound(device);
+					        if (device.getName() != null &&
+							        device.getName().startsWith(Aria.DEVICE_NAME) &&
+							        device.getName().endsWith(Aria.DEVICE_PROTOCOL)) {
+						        Aria.this.onDeviceFound(device);
+					        }
 				        }
 
 				        @Override
@@ -276,15 +281,15 @@ public class Aria extends BroadcastReceiver implements BluetoothBroadcastListene
     }//onDiscoveryStarted
 
 
-    public void onDiscoveryFinished(){
+    public void onDiscoveryFinished() {
 
-        if(device == null){
+        if (device == null){
             status = Aria.STATUS_NONE;
-        }else{
+        } else {
             status = Aria.STATUS_FOUND;
         }
 
-        for(int i=0 ; i<listeners.size() ; i++){
+        for (int i=0 ; i<listeners.size() ; i++) {
             listeners.get(i).onDiscoveryFinished(device != null);
         }
 
@@ -293,9 +298,9 @@ public class Aria extends BroadcastReceiver implements BluetoothBroadcastListene
     }//onDiscoveryFinished
 
 
-    public void onDeviceFound(BluetoothDevice _device){
+    public void onDeviceFound(BluetoothDevice device){
 
-        device = _device;
+        this.device = device;
         stopDiscovery();
 
     }//onDeviceFound
