@@ -2,7 +2,7 @@
 
 <resources>
 
-    <integer name="calibration_gestures">4</integer>
-    <integer name="calibration_iterations">5</integer>
+    <integer name="calibration_gestures">2</integer>
+    <integer name="calibration_iterations">6</integer>
 
 </resources>
