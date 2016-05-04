@@ -29,7 +29,7 @@ public class Aria extends BroadcastReceiver implements BluetoothBroadcastListene
 
 
     public final static String DEVICE_NAME = "Aria";
-	public final static String DEVICE_PROTOCOL = "6";
+	public final static String DEVICE_PROTOCOL = "7";
 
     public final static int STATUS_NONE = 1;
     public final static int STATUS_DISCOVERING = 2;
