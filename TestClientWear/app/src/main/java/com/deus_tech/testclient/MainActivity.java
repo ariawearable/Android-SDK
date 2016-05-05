@@ -27,7 +27,7 @@ public class MainActivity extends WearableActivity {
 	//
 
 	public static final String ARIA_PACKAGE_NAME = "com.deus_tech.aria";
-	public static final String ARIA_SERVICE_NAME = "AriaService";
+	public static final String ARIA_SERVICE_NAME = "com.deus_tech.aria.AriaService";
 
 	public static final int ARIA_MSG_REGISTER_CLIENT = 1;
 	public static final int ARIA_MSG_UNREGISTER_CLIENT = 2;
@@ -85,10 +85,7 @@ public class MainActivity extends WearableActivity {
 		// Bind AriaService that's running in another process
 		// You can do multiple bindings in any of your Activities or Services
 		Intent intent = new Intent();
-		intent.setComponent(new ComponentName(
-				ARIA_PACKAGE_NAME,
-				String.format("%s.%s", ARIA_PACKAGE_NAME, ARIA_SERVICE_NAME)
-		));
+		intent.setComponent(new ComponentName(ARIA_PACKAGE_NAME, ARIA_SERVICE_NAME));
 		bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
 	}
 
