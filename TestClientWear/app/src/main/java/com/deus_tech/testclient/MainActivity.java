@@ -148,7 +148,7 @@ public class MainActivity extends WearableActivity {
 
 			// Show user we are connected to service
 			Toast.makeText(MainActivity.this, "RPC connected", Toast.LENGTH_SHORT).show();
-		} catch (RemoteException e) {
+		} catch (Exception e) {
 			Toast.makeText(MainActivity.this, "RPC error", Toast.LENGTH_SHORT).show();
 			e.getStackTrace();
 		}
@@ -163,7 +163,7 @@ public class MainActivity extends WearableActivity {
 
 			// Show user we are disconnected to service
 			Toast.makeText(MainActivity.this, "RPC disconnected", Toast.LENGTH_SHORT).show();
-		} catch (RemoteException e) {
+		} catch (Exception e) {
 			// Connection to service was lost
 			e.getStackTrace();
 		}
