@@ -48,12 +48,12 @@ public class MainActivity extends WearableActivity {
 	/**
 	 * Messenger for communicating with AriaService
 	 */
-	Messenger mAriaService = null;
+	private Messenger mAriaService = null;
 
 	/**
 	 * Messenger object used by AriaService to send messages to your app
 	 */
-	final Messenger mMessenger = new Messenger(new Handler() {
+	private final Messenger mMessenger = new Messenger(new Handler() {
 		@Override
 		public void handleMessage(Message msg) {
 			switch (msg.what) {
@@ -93,6 +93,9 @@ public class MainActivity extends WearableActivity {
 	protected void onStop() {
 		super.onStop();
 
+		// Unregister AriaService client first before unbind (required)
+		ariaUnregisterClient();
+
 		// Unbind from AriaService
 		unbindService(mConnection);
 	}
@@ -104,27 +107,19 @@ public class MainActivity extends WearableActivity {
 		/**
 		 * This is called when the connection with the service has been established
 		 */
-		public void onServiceConnected(ComponentName className,
-		                               IBinder service) {
+		public void onServiceConnected(ComponentName className, IBinder service) {
+			switch (className.getClassName()) {
+				// You can have multiple service in your app
+				// So we check if this is AriaService
+				case ARIA_SERVICE_NAME:
+					// We are communicating with our service through an IDL interface,
+					// so get a client-side representation of that from the raw service object.
+					mAriaService = new Messenger(service);
+					// Register AriaService client to receive gesture messages
+					ariaRegisterClient();
+					break;
 
-			// You can have multiple service bindings
-			// So we check if this is AriaService
-			if (ARIA_SERVICE_NAME.equals(className.getClassName())) {
-				// We are communicating with our service through an IDL interface,
-				// so get a client-side representation of that from the raw service object.
-				mAriaService = new Messenger(service);
-				try {
-					// Send a registration message to AriaService
-					// AriaService will send you gestures until you unregister
-					Message msg = Message.obtain(null, ARIA_MSG_REGISTER_CLIENT);
-					msg.replyTo = mMessenger;
-					mAriaService.send(msg);
-					// Show user we are connected to service
-					Toast.makeText(MainActivity.this, "RPC connected", Toast.LENGTH_SHORT).show();
-				} catch (RemoteException e) {
-					Toast.makeText(MainActivity.this, "RPC error", Toast.LENGTH_SHORT).show();
-					e.getStackTrace();
-				}
+				// Check your connected services here
 			}
 		}
 
@@ -132,20 +127,47 @@ public class MainActivity extends WearableActivity {
 		 * This is called when the connection with the service has been unexpectedly disconnected
 		 */
 		public void onServiceDisconnected(ComponentName className) {
-			try {
-				// Try to send undegister message
-				Message msg = Message.obtain(null, ARIA_MSG_UNREGISTER_CLIENT);
-				msg.replyTo = mMessenger;
-				mAriaService.send(msg);
-			} catch (RemoteException e) {
-				// Connection to service was lost
-				e.getStackTrace();
-			}
+			switch (className.getClassName()) {
+				case ARIA_SERVICE_NAME:
+					ariaUnregisterClient();
+					mAriaService = null;
+					break;
 
-			mAriaService = null;
-			Toast.makeText(MainActivity.this, "RPC disconnected", Toast.LENGTH_SHORT).show();
+				// Check your disconnected services here
+			}
 		}
 	};
+
+	private void ariaRegisterClient() {
+		try {
+			// Send a registration message to AriaService
+			// AriaService will send you gestures until you unregister
+			Message msg = Message.obtain(null, ARIA_MSG_REGISTER_CLIENT);
+			msg.replyTo = mMessenger;
+			mAriaService.send(msg);
+
+			// Show user we are connected to service
+			Toast.makeText(MainActivity.this, "RPC connected", Toast.LENGTH_SHORT).show();
+		} catch (RemoteException e) {
+			Toast.makeText(MainActivity.this, "RPC error", Toast.LENGTH_SHORT).show();
+			e.getStackTrace();
+		}
+	}
+
+	private void ariaUnregisterClient() {
+		try {
+			// Try to send undegister message
+			Message msg = Message.obtain(null, ARIA_MSG_UNREGISTER_CLIENT);
+			msg.replyTo = mMessenger;
+			mAriaService.send(msg);
+
+			// Show user we are disconnected to service
+			Toast.makeText(MainActivity.this, "RPC disconnected", Toast.LENGTH_SHORT).show();
+		} catch (RemoteException e) {
+			// Connection to service was lost
+			e.getStackTrace();
+		}
+	}
 
 	/**
 	 * Resolves gesture number into a text
