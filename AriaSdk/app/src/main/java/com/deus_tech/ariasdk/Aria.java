@@ -105,6 +105,18 @@ public class Aria extends BroadcastReceiver implements BluetoothBroadcastListene
     }//getStatus
 
 
+    public void writeStatus_Sleep(){
+        cas.writeStatus_Sleep();
+    }
+
+
+    public void writeStatus_Exec(){
+        cas.writeStatus_Exec();
+    }
+
+
+
+
     public void startDiscovery(){
 
         device = null;
