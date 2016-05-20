@@ -410,9 +410,9 @@ public class CalibrationBleService implements CasGattListener{
                 casListeners.get(i).onCalibrationStarted();
             }
 
-        }else if(_value == CalibrationBleService.CALIBRATION_MODE_NONE){
+        }else if(_value == CalibrationBleService.STATUS_EXEC){
 
-            calibrationStatus = CalibrationBleService.CALIBRATION_MODE_NONE;
+            calibrationStatus = CalibrationBleService.STATUS_EXEC;
 
             for(int i=0 ; i<casListeners.size() ; i++){
                 casListeners.get(i).onCalibrationFinished();
