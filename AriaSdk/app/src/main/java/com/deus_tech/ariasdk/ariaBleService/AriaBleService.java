@@ -19,11 +19,11 @@ public class AriaBleService implements ArsGattListener{
     public final static UUID ARIA_BATTERY_UUID = UUID.fromString("e95d0002-b0de-1051-43b0-c7ab0ceffe1a");
 
     //gestures
-    public final static int GESTURE_HOME = 1; //right - 4F
-    public final static int GESTURE_ENTER = 2; //enter - 28
-    public final static int GESTURE_BACK = 3; //down - 51
-    public final static int GESTURE_UP = 4; //up - 52
-    public final static int GESTURE_DOWN = 5; //left - 50
+    public final static int  GESTURE_ENTER= 1; //right - 4F
+    public final static int  GESTURE_HOME= 2; //enter - 28
+    public final static int  GESTURE_UP= 3; //down - 51
+    public final static int  GESTURE_DOWN= 4; //up - 52
+    public final static int  GESTURE_BACK= 5; //left - 50
 
     private Context context;
     //bluetooth
@@ -150,10 +150,10 @@ public class AriaBleService implements ArsGattListener{
     public void onGestureChanged(int _value){
 
         if(_value == 40) _value = AriaBleService.GESTURE_ENTER;
-        else if(_value == 82) _value = AriaBleService.GESTURE_UP;
-        else if(_value == 81) _value = AriaBleService.GESTURE_BACK;
-        else if(_value == 79) _value = AriaBleService.GESTURE_HOME;
-        else _value = AriaBleService.GESTURE_DOWN;
+        else if(_value == 82) _value = AriaBleService.GESTURE_HOME;
+        else if(_value == 81) _value = AriaBleService.GESTURE_UP;
+        else if(_value == 79) _value = AriaBleService.GESTURE_DOWN;
+        else if(_value == 80) _value = AriaBleService.GESTURE_BACK;
 
         for(int i=0 ; i<arsListeners.size() ; i++){
             arsListeners.get(i).onGesturePerformed(_value);
