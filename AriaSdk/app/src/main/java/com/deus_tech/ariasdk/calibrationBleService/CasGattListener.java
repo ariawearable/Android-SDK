@@ -6,15 +6,15 @@ public interface CasGattListener{
 
     //read
 
-    void onCalibrationQualityRead(int _value);
+    void onCalibrationAttributeRead(int _value);
 
     void onCalibrationDatetimeRead(int _value);
 
     void onCalibrationModeRead(int _value);
 
-    void onGestureIndexRead(int _value);
+    void onSettingsCommandRead(int _value);
 
-    void onGestureIterationRead(int _value);
+    void onSettingsDataRead(int _value);
 
     void onGestureStatusRead(int _value);
 
@@ -25,18 +25,18 @@ public interface CasGattListener{
 
     void onCalibrationModeWritten(int _value);
 
-    void onGestureIndexWritten(int _value);
+    void onSettingsCommandWritten(int _value);
 
-    void onGestureIterationWritten(int _value);
+    void onSettingsDataWritten(int _value);
 
     void onGestureStatusWritten(int _value);
 
 
     //enable notify
 
-    void onCalibrationQualityNotifyEnabled();
+    void onCalibrationAttributeNotifyEnabled();
 
-    void onCalibrationQualityNotifyDisabled();
+    void onCalibrationAttributeNotifyDisabled();
 
     void onGestureStatusNotifyEnabled();
 
@@ -45,7 +45,7 @@ public interface CasGattListener{
 
     //receive notify
 
-    void onCalibrationQualityChanged(int _value);
+    void onCalibrationAttributeChanged(int _value);
 
     void onGestureStatusNotifyChanged(int _value);
 
