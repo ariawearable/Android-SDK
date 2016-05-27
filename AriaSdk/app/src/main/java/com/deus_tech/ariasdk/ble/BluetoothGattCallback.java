@@ -92,9 +92,9 @@ public class BluetoothGattCallback extends android.bluetooth.BluetoothGattCallba
 
         if(status == BluetoothGatt.GATT_SUCCESS){
 
-            if(characteristic.getUuid().equals(CalibrationBleService.CALIBRATION_QUALITY_UUID) && calibrationListener != null){
+            if(characteristic.getUuid().equals(CalibrationBleService.CALIBRATION_ATTRIBUTE_UUID) && calibrationListener != null){
 
-                calibrationListener.onCalibrationQualityRead(characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT8, 0));
+                calibrationListener.onCalibrationAttributeRead(characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT8, 0));
 
             }else if(characteristic.getUuid().equals(CalibrationBleService.CALIBRATION_DATETIME_UUID) && calibrationListener != null){
 
@@ -104,13 +104,13 @@ public class BluetoothGattCallback extends android.bluetooth.BluetoothGattCallba
 
                 calibrationListener.onCalibrationModeRead(characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT8, 0));
 
-            }else if(characteristic.getUuid().equals(CalibrationBleService.GESTURE_INDEX_UUID) && calibrationListener != null){
+            }else if(characteristic.getUuid().equals(CalibrationBleService.SETTINGS_COMMAND_UUID) && calibrationListener != null){
 
-                calibrationListener.onGestureIndexRead(characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT8, 0));
+                calibrationListener.onSettingsCommandRead(characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT8, 0));
 
-            }else if(characteristic.getUuid().equals(CalibrationBleService.GESTURE_ITERATION_UUID) && calibrationListener != null){
+            }else if(characteristic.getUuid().equals(CalibrationBleService.SETTINGS_DATA_UUID) && calibrationListener != null){
 
-                calibrationListener.onGestureIterationRead(characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT8, 0));
+                calibrationListener.onSettingsDataRead(characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT8, 0));
 
             }else if(characteristic.getUuid().equals(CalibrationBleService.GESTURE_STATUS_UUID) && calibrationListener != null){
 
@@ -131,7 +131,7 @@ public class BluetoothGattCallback extends android.bluetooth.BluetoothGattCallba
 
         if(status == BluetoothGatt.GATT_SUCCESS){
 
-           if(characteristic.getUuid().equals(CalibrationBleService.CALIBRATION_DATETIME_UUID) && calibrationListener != null){
+            if(characteristic.getUuid().equals(CalibrationBleService.CALIBRATION_DATETIME_UUID) && calibrationListener != null){
 
                 calibrationListener.onCalibrationDatetimeWritten(characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT8,0));
 
@@ -139,13 +139,13 @@ public class BluetoothGattCallback extends android.bluetooth.BluetoothGattCallba
 
                 calibrationListener.onCalibrationModeWritten(characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT8, 0));
 
-            }else if(characteristic.getUuid().equals(CalibrationBleService.GESTURE_INDEX_UUID) && calibrationListener != null){
+            }else if(characteristic.getUuid().equals(CalibrationBleService.SETTINGS_COMMAND_UUID) && calibrationListener != null){
 
-                calibrationListener.onGestureIndexWritten(characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT8,0));
+                calibrationListener.onSettingsCommandWritten(characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT8,0));
 
-            }else if(characteristic.getUuid().equals(CalibrationBleService.GESTURE_ITERATION_UUID) && calibrationListener != null){
+            }else if(characteristic.getUuid().equals(CalibrationBleService.SETTINGS_DATA_UUID) && calibrationListener != null){
 
-                calibrationListener.onGestureIterationWritten(characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT8,0));
+                calibrationListener.onSettingsDataWritten(characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT8,0));
 
             }else if(characteristic.getUuid().equals(CalibrationBleService.GESTURE_STATUS_UUID) && calibrationListener != null){
 
@@ -163,9 +163,9 @@ public class BluetoothGattCallback extends android.bluetooth.BluetoothGattCallba
 
     public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic){
 
-        if(characteristic.getUuid().equals(CalibrationBleService.CALIBRATION_QUALITY_UUID) && calibrationListener != null){
+        if(characteristic.getUuid().equals(CalibrationBleService.CALIBRATION_ATTRIBUTE_UUID) && calibrationListener != null){
 
-            calibrationListener.onCalibrationQualityChanged(characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT8,0));
+            calibrationListener.onCalibrationAttributeChanged(characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT8,0));
 
         }else if(characteristic.getUuid().equals(CalibrationBleService.GESTURE_STATUS_UUID) && calibrationListener != null){
 
@@ -191,15 +191,15 @@ public class BluetoothGattCallback extends android.bluetooth.BluetoothGattCallba
 
         if(status == BluetoothGatt.GATT_SUCCESS){
 
-            if(descriptor.getCharacteristic().getUuid().equals(CalibrationBleService.CALIBRATION_QUALITY_UUID) && calibrationListener != null){
+            if(descriptor.getCharacteristic().getUuid().equals(CalibrationBleService.CALIBRATION_ATTRIBUTE_UUID) && calibrationListener != null){
 
                 if(descriptor.getValue().equals(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE)){
 
-                    calibrationListener.onCalibrationQualityNotifyEnabled();
+                    calibrationListener.onCalibrationAttributeNotifyEnabled();
 
                 }else if(descriptor.getValue().equals(BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE)){
 
-                    calibrationListener.onCalibrationQualityNotifyDisabled();
+                    calibrationListener.onCalibrationAttributeNotifyDisabled();
 
                 }
 

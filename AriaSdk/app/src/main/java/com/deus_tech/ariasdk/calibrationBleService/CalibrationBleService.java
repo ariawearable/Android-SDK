@@ -17,20 +17,24 @@ public class CalibrationBleService implements CasGattListener{
     //UUID-s
     public final static UUID CALIBRATION_SERVICE_UUID = UUID.fromString("caa50000-2244-a09d-e968-5f43e74d0c5c");
     public final static UUID CCCD_UUID = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
-    public final static UUID CALIBRATION_QUALITY_UUID = UUID.fromString("caa50001-2244-a09d-e968-5f43e74d0c5c");
+    public final static UUID CALIBRATION_ATTRIBUTE_UUID = UUID.fromString("caa50001-2244-a09d-e968-5f43e74d0c5c");
     public final static UUID CALIBRATION_DATETIME_UUID = UUID.fromString("caa50002-2244-a09d-e968-5f43e74d0c5c");
     public final static UUID CALIBRATION_MODE_UUID = UUID.fromString("caa50003-2244-a09d-e968-5f43e74d0c5c");
-    public final static UUID GESTURE_INDEX_UUID = UUID.fromString("caa50004-2244-a09d-e968-5f43e74d0c5c");
-    public final static UUID GESTURE_ITERATION_UUID = UUID.fromString("caa50005-2244-a09d-e968-5f43e74d0c5c");
+    public final static UUID SETTINGS_COMMAND_UUID = UUID.fromString("caa50004-2244-a09d-e968-5f43e74d0c5c");
+    public final static UUID SETTINGS_DATA_UUID = UUID.fromString("caa50005-2244-a09d-e968-5f43e74d0c5c");
     public final static UUID GESTURE_STATUS_UUID = UUID.fromString("caa50006-2244-a09d-e968-5f43e74d0c5c");
 
 
-    //calibration quality values
-    /*
-    public final static int CALIBRATION_QUALITY_BAD = 1;
-    public final static int CALIBRATION_QUALITY_MEDIUM = 2;
-    public final static int CALIBRATION_QUALITY_GOOD = 3;
-    */
+    //settings command values
+
+    public final static int SET_NUMBER_GESTURE = 0xC0;
+    public final static int SET_NUMBER_REPETITION = 0xC1;
+
+    //calibration attribute values
+
+    public final static int CALIBRATION_IS_PRESENT = 1;
+    public final static int CALIBRATION_IS_NOT_PRESENT = 0;
+
 
     //calibration mode values
     // TODO: review CALIBRATION_MODE_NONE with the CALIBRATION_ATTRIBUTE in place of CALIBRATION_QUALITY
@@ -48,39 +52,45 @@ public class CalibrationBleService implements CasGattListener{
     public final static int GESTURE_STATUS_OK = 3;
     public final static int GESTURE_STATUS_ERROR1 = 4;
     public final static int GESTURE_STATUS_ERROR2 = 5;
-    //public final static int GESTURE_STATUS_ERROR2 = 5;
-    //public final static int GESTURE_STATUS_ERROR3 = 6;
+    public final static int GESTURE_STATUS_ERROR3 = 6;
+    public final static int GESTURE_STATUS_OKREPETITION = 7;
+    public final static int GESTURE_STATUS_OKGESTURE = 8;
+    public final static int GESTURE_STATUS_OKCALIBRATION = 9;
 
+    public final static int OLD_PROTOCOL = 0;
+    public final static int NEW_PROTOCOL = 1;
 
     private Context context;
     //bluetooth
     private BluetoothGatt btGatt;
     private BluetoothGattService btGattService;
     //characteristics
-    private BluetoothGattCharacteristic calibrationQualityChar;
+    private BluetoothGattCharacteristic calibrationAttributeChar;
     private BluetoothGattCharacteristic calibrationDatetimeChar;
     private BluetoothGattCharacteristic calibrationModeChar;
-    private BluetoothGattCharacteristic gestureIndexChar;
-    private BluetoothGattCharacteristic gestureIterationChar;
+    private BluetoothGattCharacteristic settingsCommandChar;
+    private BluetoothGattCharacteristic settingsDataChar;
     private BluetoothGattCharacteristic gestureStatusChar;
     //listeners
     private ArrayList<CasInitListener> initListeners;
     private ArrayList<CasListener> casListeners;
     //calibration
+    private int gestureProtocol;
     private int numGestures;
-    private int numIterations;
+    private int numRepetitions;
     private int calibrationStatus;
     private int gestureStatus;
     private int currentGestureIndex;
     private int currentGestureIteration;
-
+    private int settingsCommand;
+    private int settingsData;
 
     public CalibrationBleService(Context _context, BluetoothGatt _btGatt, BluetoothGattService _btGattService){
 
         context = _context;
 
         numGestures = context.getResources().getInteger(R.integer.calibration_gestures);
-        numIterations = context.getResources().getInteger(R.integer.calibration_iterations);
+        numRepetitions = context.getResources().getInteger(R.integer.calibration_iterations);
 
         initListeners = new ArrayList<CasInitListener>();
         casListeners = new ArrayList<CasListener>();
@@ -124,16 +134,20 @@ public class CalibrationBleService implements CasGattListener{
         calibrationStatus = CalibrationBleService.CALIBRATION_MODE_NONE;
         gestureStatus = CalibrationBleService.GESTURE_STATUS_NONE;
 
-        calibrationQualityChar = btGattService.getCharacteristic(CalibrationBleService.CALIBRATION_QUALITY_UUID);
+        calibrationAttributeChar = btGattService.getCharacteristic(CalibrationBleService.CALIBRATION_ATTRIBUTE_UUID);
         calibrationDatetimeChar = btGattService.getCharacteristic(CalibrationBleService.CALIBRATION_DATETIME_UUID);
         calibrationModeChar = btGattService.getCharacteristic(CalibrationBleService.CALIBRATION_MODE_UUID);
-        gestureIndexChar = btGattService.getCharacteristic(CalibrationBleService.GESTURE_INDEX_UUID);
-        gestureIterationChar = btGattService.getCharacteristic(CalibrationBleService.GESTURE_ITERATION_UUID);
+        settingsCommandChar = btGattService.getCharacteristic(CalibrationBleService.SETTINGS_COMMAND_UUID);
+        settingsDataChar = btGattService.getCharacteristic(CalibrationBleService.SETTINGS_DATA_UUID);
         gestureStatusChar = btGattService.getCharacteristic(CalibrationBleService.GESTURE_STATUS_UUID);
 
         enableGestureStatusNotify(true);
+        enableCalibrationAttributeNotify(true);
+
 
     }//init
+
+
 
 
     public int getGesturesNumber(){
@@ -142,21 +156,32 @@ public class CalibrationBleService implements CasGattListener{
 
     }//getGesturesNumber
 
+    public void setGesturesNumber(int val){
+
+        numGestures=val;
+
+    }
 
     public int getIterationsNumber(){
 
-        return numIterations;
+        return numRepetitions;
+
+    }//getIterationsNumber
+
+    public void setIterationsNumber(int val){
+
+        numRepetitions =val;
 
     }//getIterationsNumber
 
 
     public void startCalibration(){
 
+        gestureProtocol=CalibrationBleService.NEW_PROTOCOL;
         calibrationStatus = CalibrationBleService.CALIBRATION_MODE_NONE;
         gestureStatus = CalibrationBleService.GESTURE_STATUS_NONE;
-
         currentGestureIndex = 1;
-        currentGestureIteration = 0;
+        currentGestureIteration = 1;
 
         //deprecated writeCalibrationMode(CalibrationBleService.CALIBRATION_MODE_HARD);
         writeStatus_Calib();
@@ -166,41 +191,47 @@ public class CalibrationBleService implements CasGattListener{
 
     public void nextCalibrationStep(){
 
-        currentGestureIteration++;
+        if ( gestureProtocol == NEW_PROTOCOL ) writeGestureStatus(CalibrationBleService.GESTURE_STATUS_STARTED);
+        else {
+            currentGestureIteration++;
 
-        if(currentGestureIteration > numIterations){
+            if (currentGestureIteration > numRepetitions) {
 
-            currentGestureIndex++;
-            currentGestureIteration = 1;
+                currentGestureIndex++;
+                currentGestureIteration = 1;
 
-        }
-
-        if(currentGestureIndex > numGestures){
-
-            for(int i=0 ; i<casListeners.size() ; i++){
-                casListeners.get(i).onCalibrationFinished();
             }
 
-        }else{
+            if (currentGestureIndex > numGestures) {
 
-            writeGestureIndex(currentGestureIndex);
+                for (int i = 0; i < casListeners.size(); i++) {
+                    casListeners.get(i).onCalibrationFinished();
+                }
+
+            } else {
+
+                // deprecated writeGestureIndex(currentGestureIndex);
+                writeGestureStatus(CalibrationBleService.GESTURE_STATUS_STARTED);
+
+
+            }
 
         }
+
 
     }//nextCalibrationStep
 
-
     public void repeatCalibrationStep(){
 
-        writeGestureIndex(this.currentGestureIndex);
+        //writeGestureIndex(this.currentGestureIndex);
 
     }//repeatCalibrationStep
 
 
     public void stopCalibration(){
-
-        //deprecated  writeCalibrationMode(CalibrationBleService.CALIBRATION_MODE_NONE);
+        //TODO: implement the control on the Calibration_Attribute
         writeStatus_Exec();
+
 
     }//stopCalibration
 
@@ -214,7 +245,7 @@ public class CalibrationBleService implements CasGattListener{
 
     public int getGestureStatus(){
 
-      return gestureStatus;
+        return gestureStatus;
 
     }//getGestureStatus
 
@@ -235,11 +266,11 @@ public class CalibrationBleService implements CasGattListener{
 
     //read
 
-    private void readCalibrationQuality(){
+    private void readCalibrationAttribute(){
 
-        btGatt.readCharacteristic(calibrationQualityChar);
+        btGatt.readCharacteristic(calibrationAttributeChar);
 
-    }//readCalibrationQuality
+    }//readCalibrationAttribute
 
 
     private void readCalibrationDatetime(){
@@ -258,14 +289,14 @@ public class CalibrationBleService implements CasGattListener{
 
     private void readGestureIndex(){
 
-        btGatt.readCharacteristic(gestureIndexChar);
+        btGatt.readCharacteristic(settingsCommandChar);
 
     }//readGestureIndex
 
 
     private void readGestureIteration(){
 
-        btGatt.readCharacteristic(gestureIterationChar);
+        btGatt.readCharacteristic(settingsDataChar);
 
     }//readGestureIteration
 
@@ -294,7 +325,6 @@ public class CalibrationBleService implements CasGattListener{
 
     }//writeCalibrationMode
 
-
     public void writeStatus_Exec(){
         calibrationModeChar.setValue(STATUS_EXEC, BluetoothGattCharacteristic.FORMAT_UINT8, 0);
         btGatt.writeCharacteristic(calibrationModeChar);
@@ -315,18 +345,18 @@ public class CalibrationBleService implements CasGattListener{
         btGatt.writeCharacteristic(calibrationModeChar);
     }
 
-    private void writeGestureIndex(int _index){
-
-        gestureIndexChar.setValue(_index, BluetoothGattCharacteristic.FORMAT_UINT8, 0);
-        btGatt.writeCharacteristic(gestureIndexChar);
+    public void writeSettingsCommand(int _command){
+        settingsCommand=_command;  //USE this for the callback onSettingsCommandWritten();
+        settingsCommandChar.setValue(_command, BluetoothGattCharacteristic.FORMAT_UINT8, 0);
+        btGatt.writeCharacteristic(settingsCommandChar);
 
     }//writeGestureIndex
 
 
-    private void writeGestureIteration(int _iteration){
-
-        gestureIterationChar.setValue(_iteration, BluetoothGattCharacteristic.FORMAT_UINT8, 0);
-        btGatt.writeCharacteristic(gestureIterationChar);
+    public void writeSettingsData(int _data){
+        settingsData = _data;   //USE this for the callback onSettingsDataWritten();
+        settingsDataChar.setValue(_data, BluetoothGattCharacteristic.FORMAT_UINT8, 0);
+        btGatt.writeCharacteristic(settingsDataChar);
 
     }//writeGestureIteration
 
@@ -341,11 +371,11 @@ public class CalibrationBleService implements CasGattListener{
 
     //enable notify
 
-    private void enableCalibrationQualityNotify(boolean _isEnabled){
+    private void enableCalibrationAttributeNotify(boolean _isEnabled){
 
-        btGatt.setCharacteristicNotification(calibrationQualityChar, true);
+        btGatt.setCharacteristicNotification(calibrationAttributeChar, true);
 
-        BluetoothGattDescriptor cccd = calibrationQualityChar.getDescriptor(CalibrationBleService.CCCD_UUID);
+        BluetoothGattDescriptor cccd = calibrationAttributeChar.getDescriptor(CalibrationBleService.CCCD_UUID);
 
         if(_isEnabled){
             cccd.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
@@ -355,7 +385,7 @@ public class CalibrationBleService implements CasGattListener{
 
         btGatt.writeDescriptor(cccd);
 
-    }//enableCalibrationQualityNotify
+    }//enableCalibrationAttributeNotify
 
 
     private void enableGestureStatusNotify(boolean _isEnabled){
@@ -377,7 +407,7 @@ public class CalibrationBleService implements CasGattListener{
 
     //listener read
 
-    public void onCalibrationQualityRead(int _value){}//onCalibrationQualityRead
+    public void onCalibrationAttributeRead(int _value){}//onCalibrationAttributeRead
 
 
     public void onCalibrationDatetimeRead(int _value){}//onCalibrationDatetimeRead
@@ -386,10 +416,10 @@ public class CalibrationBleService implements CasGattListener{
     public void onCalibrationModeRead(int _value){}//onCalibrationModeRead
 
 
-    public void onGestureIndexRead(int _value){}//onGestureIndexRead
+    public void onSettingsCommandRead(int _value){}//onGestureIndexRead
 
 
-    public void onGestureIterationRead(int _value){}//onGestureIterationRead
+    public void onSettingsDataRead(int _value){}//onGestureIterationRead
 
 
     public void onGestureStatusRead(int _value){}//onGestureStatusRead
@@ -410,29 +440,36 @@ public class CalibrationBleService implements CasGattListener{
                 casListeners.get(i).onCalibrationStarted();
             }
 
-        }else if(_value == CalibrationBleService.STATUS_EXEC){
-
-            calibrationStatus = CalibrationBleService.STATUS_EXEC;
-
-            for(int i=0 ; i<casListeners.size() ; i++){
-                casListeners.get(i).onCalibrationFinished();
-            }
-
         }
+//        else if(_value == CalibrationBleService.STATUS_EXEC){
+//
+//            calibrationStatus = CalibrationBleService.STATUS_EXEC;
+//
+//            for(int i=0 ; i<casListeners.size() ; i++){
+//                casListeners.get(i).onCalibrationFinished();
+//            }
+//
+//        }
 
     }//onCalibrationModeWritten
 
 
-    public void onGestureIndexWritten(int _value){
-
-        writeGestureIteration(currentGestureIteration);
+    public void onSettingsCommandWritten(int _value){
+        if      (settingsCommand==SET_NUMBER_GESTURE) writeSettingsData(numGestures);
+        else if (settingsCommand==SET_NUMBER_REPETITION)   writeSettingsData(numRepetitions);
 
     }//onGestureIndexWritten
 
 
-    public void onGestureIterationWritten(int _value){
+    public void onSettingsDataWritten(int _value){
+//        DON'T use the callback like onSettingsCommandWritten() because the data is not mutually different among commands.
 
-        writeGestureStatus(CalibrationBleService.GESTURE_STATUS_STARTED);
+//        if (settingsCommand == SET_NUMBER_GESTURE )
+//        {   settingsCommand = SET_NUMBER_REPETITION;
+//            writeSettingsCommand(settingsCommand);
+//        }
+
+        //deprecated writeGestureStatus(CalibrationBleService.GESTURE_STATUS_STARTED);
 
     }//onGestureIterationWritten
 
@@ -454,10 +491,10 @@ public class CalibrationBleService implements CasGattListener{
 
     //listener enable notify
 
-    public void onCalibrationQualityNotifyEnabled(){}//onCalibrationQualityNotifyEnabled
+    public void onCalibrationAttributeNotifyEnabled(){}//onCalibrationAttributeNotifyEnabled
 
 
-    public void onCalibrationQualityNotifyDisabled(){}//onCalibrationQualityNotifyDisabled
+    public void onCalibrationAttributeNotifyDisabled(){}//onCalibrationAttributeNotifyDisabled
 
 
     public void onGestureStatusNotifyEnabled(){
@@ -474,7 +511,7 @@ public class CalibrationBleService implements CasGattListener{
 
     //listener characteristics changed
 
-    public void onCalibrationQualityChanged(int _value){}//onCalibrationQualityChanged
+    public void onCalibrationAttributeChanged(int _value){}//onCalibrationAttributeChanged
 
 
     public void onGestureStatusNotifyChanged(int _value){
@@ -489,13 +526,14 @@ public class CalibrationBleService implements CasGattListener{
 
         }else if(_value == CalibrationBleService.GESTURE_STATUS_OK){
 
+            gestureProtocol = OLD_PROTOCOL;
             gestureStatus = CalibrationBleService.GESTURE_STATUS_OK;
 
             for(int i=0 ; i<casListeners.size() ; i++){
                 casListeners.get(i).onCalibrationStepDone(currentGestureIndex, currentGestureIteration);
             }
 
-            if(this.currentGestureIndex == this.numGestures && this.currentGestureIteration == this.numIterations){
+            if(this.currentGestureIndex == this.numGestures && this.currentGestureIteration == this.numRepetitions){
 
                 stopCalibration();
 
@@ -519,9 +557,52 @@ public class CalibrationBleService implements CasGattListener{
                 casListeners.get(i).onCalibrationStepError(currentGestureIndex, currentGestureIteration);
             }
 
+        }else if(_value == CalibrationBleService.GESTURE_STATUS_OKREPETITION) {
+
+            gestureStatus = CalibrationBleService.GESTURE_STATUS_OKREPETITION;
+            currentGestureIteration++;
+            gestureProtocol = NEW_PROTOCOL;
+
+            for(int i=0 ; i<casListeners.size() ; i++){
+                casListeners.get(i).onCalibrationStepDone(currentGestureIndex, currentGestureIteration);
+            }
+
+        }else if(_value == CalibrationBleService.GESTURE_STATUS_OKGESTURE) {
+            gestureProtocol = NEW_PROTOCOL;
+
+            gestureStatus = CalibrationBleService.GESTURE_STATUS_OKGESTURE;
+            currentGestureIndex++;
+            currentGestureIteration=1;
+
+            for(int i=0 ; i<casListeners.size() ; i++){
+                casListeners.get(i).onCalibrationStepDone(currentGestureIndex, currentGestureIteration);
+            }
+
+        }else if(_value == CalibrationBleService.GESTURE_STATUS_OKCALIBRATION) {
+            gestureProtocol = NEW_PROTOCOL;
+
+            gestureStatus = CalibrationBleService.GESTURE_STATUS_OKCALIBRATION;
+
+            stopCalibration();
+
+            for (int i = 0; i < casListeners.size(); i++) {
+                casListeners.get(i).onCalibrationFinished();
+            }
+
+
         }
 
     }//onGestureStatusNotifyChanged
 
+
+    public void setGesture(int value){
+        setGesturesNumber(value);
+        writeSettingsCommand(SET_NUMBER_GESTURE);
+    }
+
+    public void setRepetition(int value){
+        setIterationsNumber(value);
+        writeSettingsCommand(SET_NUMBER_REPETITION);
+    }
 
 }//CalibrationBleService
