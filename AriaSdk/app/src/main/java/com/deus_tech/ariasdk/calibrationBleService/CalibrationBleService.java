@@ -541,7 +541,7 @@ public class CalibrationBleService implements CasGattListener{
 
         }else if(_value == CalibrationBleService.GESTURE_STATUS_ERROR1){
 
-            this.currentGestureIteration=2;
+            this.currentGestureIteration=1;
             gestureStatus = CalibrationBleService.GESTURE_STATUS_ERROR1;
 
             for(int i=0 ; i<casListeners.size() ; i++){
@@ -550,8 +550,8 @@ public class CalibrationBleService implements CasGattListener{
 
         }else if(_value == CalibrationBleService.GESTURE_STATUS_ERROR2){
 
-            this.currentGestureIteration=1;
-            gestureStatus = CalibrationBleService.GESTURE_STATUS_ERROR1;
+            this.currentGestureIteration=0;
+            gestureStatus = CalibrationBleService.GESTURE_STATUS_ERROR2;
 
             for(int i=0 ; i<casListeners.size() ; i++){
                 casListeners.get(i).onCalibrationStepError(currentGestureIndex, currentGestureIteration);
