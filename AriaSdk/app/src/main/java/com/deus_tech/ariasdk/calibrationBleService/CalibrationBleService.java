@@ -116,7 +116,9 @@ public class CalibrationBleService implements CasGattListener{
 
 
     public void addCasListener(CasListener _listener){
-
+		// there should be only single listener so it will clear
+        // previous one before adding new
+        casListeners.clear();
         casListeners.add(_listener);
 
     }//addCasListener
