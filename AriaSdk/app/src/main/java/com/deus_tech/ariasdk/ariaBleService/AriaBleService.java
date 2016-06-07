@@ -7,6 +7,8 @@ import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import android.content.Context;
 
+import com.deus_tech.ariasdk.Aria;
+
 import java.util.ArrayList;
 import java.util.UUID;
 
@@ -148,13 +150,19 @@ public class AriaBleService implements ArsGattListener{
 
 
     public void onGestureChanged(int _value){
-
-        if(_value == 40) _value = AriaBleService.GESTURE_ENTER;
-        else if(_value == 82) _value = AriaBleService.GESTURE_HOME;
-        else if(_value == 81) _value = AriaBleService.GESTURE_UP;
-        else if(_value == 79) _value = AriaBleService.GESTURE_DOWN;
-        else if(_value == 80) _value = AriaBleService.GESTURE_BACK;
-
+     //   if (Integer.parseInt(Aria.DEVICE_PROTOCOL)==2){
+            if (_value == 0x4F) _value = AriaBleService.GESTURE_ENTER;
+            else if (_value == 0x50) _value = AriaBleService.GESTURE_HOME;
+            else if (_value == 0x52) _value = AriaBleService.GESTURE_UP;
+            else if (_value == 0x51) _value = AriaBleService.GESTURE_DOWN;
+            else if (_value == 0x28) _value = AriaBleService.GESTURE_BACK;
+//        }else{
+//            if (_value == 40) _value = AriaBleService.GESTURE_ENTER;
+//            else if (_value == 82) _value = AriaBleService.GESTURE_HOME;
+//            else if (_value == 81) _value = AriaBleService.GESTURE_UP;
+//            else if (_value == 79) _value = AriaBleService.GESTURE_DOWN;
+//            else if (_value == 80) _value = AriaBleService.GESTURE_BACK;
+//        }
         for(int i=0 ; i<arsListeners.size() ; i++){
             arsListeners.get(i).onGesturePerformed(_value);
         }

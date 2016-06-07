@@ -135,6 +135,7 @@ public class CalibrationBleService implements CasGattListener{
 
         calibrationStatus = CalibrationBleService.CALIBRATION_MODE_NONE;
         gestureStatus = CalibrationBleService.GESTURE_STATUS_NONE;
+        gestureProtocol=CalibrationBleService.NEW_PROTOCOL;
 
         calibrationAttributeChar = btGattService.getCharacteristic(CalibrationBleService.CALIBRATION_ATTRIBUTE_UUID);
         calibrationDatetimeChar = btGattService.getCharacteristic(CalibrationBleService.CALIBRATION_DATETIME_UUID);
@@ -179,7 +180,6 @@ public class CalibrationBleService implements CasGattListener{
 
     public void startCalibration(){
 
-        gestureProtocol=CalibrationBleService.NEW_PROTOCOL;
         calibrationStatus = CalibrationBleService.CALIBRATION_MODE_NONE;
         gestureStatus = CalibrationBleService.GESTURE_STATUS_NONE;
         currentGestureIndex = 1;
