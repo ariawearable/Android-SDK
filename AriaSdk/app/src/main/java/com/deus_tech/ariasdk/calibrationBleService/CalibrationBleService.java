@@ -519,27 +519,30 @@ public class CalibrationBleService implements CasGattListener{
     public void onGestureStatusNotifyChanged(int _value){
 
         if(_value == CalibrationBleService.GESTURE_STATUS_RECORDING){
+          //  if (gestureStatus==CalibrationBleService.GESTURE_STATUS_STARTED) { //check it receives the started before recording
+                gestureStatus = CalibrationBleService.GESTURE_STATUS_RECORDING;
 
-            gestureStatus = CalibrationBleService.GESTURE_STATUS_RECORDING;
-
-            for(int i=0 ; i<casListeners.size() ; i++){
-                casListeners.get(i).onCalibrationStepRecording(currentGestureIndex, currentGestureIteration);
-            }
-
+                for (int i = 0; i < casListeners.size(); i++) {
+                    casListeners.get(i).onCalibrationStepRecording(currentGestureIndex, currentGestureIteration);
+                }
+           // }
         }else if(_value == CalibrationBleService.GESTURE_STATUS_OK){
+           // if (gestureStatus ==  CalibrationBleService.GESTURE_STATUS_RECORDING) { //check it receives recording before ok gesture
 
-            gestureProtocol = OLD_PROTOCOL;
-            gestureStatus = CalibrationBleService.GESTURE_STATUS_OK;
+                gestureProtocol = OLD_PROTOCOL;
+                gestureStatus = CalibrationBleService.GESTURE_STATUS_OK;
 
-            for(int i=0 ; i<casListeners.size() ; i++){
-                casListeners.get(i).onCalibrationStepDone(currentGestureIndex, currentGestureIteration);
-            }
+                for(int i=0 ; i<casListeners.size() ; i++){
+                    casListeners.get(i).onCalibrationStepDone(currentGestureIndex, currentGestureIteration);
+                }
 
-            if(this.currentGestureIndex == this.numGestures && this.currentGestureIteration == this.numRepetitions){
+                if(this.currentGestureIndex == this.numGestures && this.currentGestureIteration == this.numRepetitions) {
 
-                stopCalibration();
+                    stopCalibration();
 
-            }
+
+                }
+            //}
 
         }else if(_value == CalibrationBleService.GESTURE_STATUS_ERROR1){
 
@@ -560,25 +563,28 @@ public class CalibrationBleService implements CasGattListener{
             }
 
         }else if(_value == CalibrationBleService.GESTURE_STATUS_OKREPETITION) {
+         //   if (gestureStatus ==  CalibrationBleService.GESTURE_STATUS_RECORDING) { //check it receives recording before ok gesture
+                gestureStatus = CalibrationBleService.GESTURE_STATUS_OKREPETITION;
+                currentGestureIteration++;
+                gestureProtocol = NEW_PROTOCOL;
 
-            gestureStatus = CalibrationBleService.GESTURE_STATUS_OKREPETITION;
-            currentGestureIteration++;
-            gestureProtocol = NEW_PROTOCOL;
-
-            for(int i=0 ; i<casListeners.size() ; i++){
-                casListeners.get(i).onCalibrationStepDone(currentGestureIndex, currentGestureIteration);
-            }
-
+                for (int i = 0; i < casListeners.size(); i++) {
+                    casListeners.get(i).onCalibrationStepDone(currentGestureIndex, currentGestureIteration);
+                }
+        //    }
         }else if(_value == CalibrationBleService.GESTURE_STATUS_OKGESTURE) {
-            gestureProtocol = NEW_PROTOCOL;
+         //   if (gestureStatus ==  CalibrationBleService.GESTURE_STATUS_RECORDING) { //check it receives recording before ok gesture
 
-            gestureStatus = CalibrationBleService.GESTURE_STATUS_OKGESTURE;
-            currentGestureIndex++;
-            currentGestureIteration=1;
+                gestureProtocol = NEW_PROTOCOL;
 
-            for(int i=0 ; i<casListeners.size() ; i++){
-                casListeners.get(i).onCalibrationStepDone(currentGestureIndex, currentGestureIteration);
-            }
+                gestureStatus = CalibrationBleService.GESTURE_STATUS_OKGESTURE;
+                currentGestureIndex++;
+                currentGestureIteration = 1;
+
+                for (int i = 0; i < casListeners.size(); i++) {
+                    casListeners.get(i).onCalibrationStepDone(currentGestureIndex, currentGestureIteration);
+                }
+        //    }
 
         }else if(_value == CalibrationBleService.GESTURE_STATUS_OKCALIBRATION) {
             gestureProtocol = NEW_PROTOCOL;
