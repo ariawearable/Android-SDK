@@ -7,7 +7,10 @@ import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import android.content.Context;
 
+import com.deus_tech.aria.GestureEvent;
 import com.deus_tech.ariasdk.Aria;
+
+import org.greenrobot.eventbus.EventBus;
 
 import java.util.ArrayList;
 import java.util.UUID;
@@ -163,9 +166,13 @@ public class AriaBleService implements ArsGattListener{
 //            else if (_value == 79) _value = AriaBleService.GESTURE_DOWN;
 //            else if (_value == 80) _value = AriaBleService.GESTURE_BACK;
 //        }
-        for(int i=0 ; i<arsListeners.size() ; i++){
-            arsListeners.get(i).onGesturePerformed(_value);
-        }
+
+        EventBus.getDefault().post(new GestureEvent(_value));
+//        for(int i=0 ; i<arsListeners.size() ; i++){
+//            arsListeners.get(i).onGesturePerformed(_value);
+//
+//
+//        }
 
     }//onGestureChanged
 
