@@ -7,8 +7,8 @@ import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import android.content.Context;
 
-import com.deus_tech.aria.GestureEvent;
-import com.deus_tech.ariasdk.Aria;
+import com.deus_tech.aria.ArsEvents.BatteryEvent;
+import com.deus_tech.aria.ArsEvents.GestureEvent;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -39,7 +39,7 @@ public class AriaBleService implements ArsGattListener{
     private BluetoothGattCharacteristic ariaBatteryChar;
     //listeners
     private ArrayList<ArsInitListener> initListeners;
-    private ArrayList<ArsListener> arsListeners;
+//    private ArrayList<ArsListener> arsListeners;
 
 
     public AriaBleService(Context _context, BluetoothGatt _btGatt, BluetoothGattService _btGattService){
@@ -47,7 +47,7 @@ public class AriaBleService implements ArsGattListener{
         context = _context;
 
         initListeners = new ArrayList<ArsInitListener>();
-        arsListeners = new ArrayList<ArsListener>();
+//        arsListeners = new ArrayList<ArsListener>();
 
         btGatt = _btGatt;
         btGattService = _btGattService;
@@ -69,18 +69,18 @@ public class AriaBleService implements ArsGattListener{
     }//removeInitListener
 
 
-    public void addListener(ArsListener _listener){
+//    public void addListener(ArsListener _listener){
+//
+//        arsListeners.add(_listener);
+//
+//    }//addArsListener
 
-        arsListeners.add(_listener);
 
-    }//addArsListener
-
-
-    public void removeListener(ArsListener _listener){
-
-        arsListeners.remove(_listener);
-
-    }//removeArsListener
+//    public void removeListener(ArsListener _listener){
+//
+//        arsListeners.remove(_listener);
+//
+//    }//removeArsListener
 
 
     public void init(){
@@ -181,9 +181,10 @@ public class AriaBleService implements ArsGattListener{
 
     public void onBatteryRead(int _value){
 
-        for(int i=0 ; i<arsListeners.size() ; i++){
-            arsListeners.get(i).onBatteryValueUpdated(_value);
-        }
+        EventBus.getDefault().post(new BatteryEvent(_value));
+//        for(int i=0 ; i<arsListeners.size() ; i++){
+//            arsListeners.get(i).onBatteryValueUpdated(_value);
+//        }
 
     }//onBatteryRead
 
@@ -202,9 +203,10 @@ public class AriaBleService implements ArsGattListener{
 
     public void onBatteryChanged(int _value){
 
-        for(int i=0 ; i<arsListeners.size() ; i++){
-            arsListeners.get(i).onBatteryValueUpdated(_value);
-        }
+        EventBus.getDefault().post(new BatteryEvent(_value));
+//        for(int i=0 ; i<arsListeners.size() ; i++){
+//            arsListeners.get(i).onBatteryValueUpdated(_value);
+//        }
 
     }//onBatteryChanged
 

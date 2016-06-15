@@ -11,6 +11,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 
+import com.deus_tech.aria.AriaConnectionEvents.ConnectedEvent;
+import com.deus_tech.aria.AriaConnectionEvents.DisconnectedEvent;
+import com.deus_tech.aria.AriaConnectionEvents.DiscoveryFinishedEvent;
+import com.deus_tech.aria.AriaConnectionEvents.DiscoveryStartedEvent;
+import com.deus_tech.aria.AriaConnectionEvents.ReadyEvent;
 import com.deus_tech.ariasdk.ariaBleService.ArsInitListener;
 import com.deus_tech.ariasdk.ariaBleService.AriaBleService;
 import com.deus_tech.ariasdk.ble.BluetoothBroadcastListener;
@@ -20,6 +25,8 @@ import com.deus_tech.ariasdk.ble.BluetoothScan;
 import com.deus_tech.ariasdk.ble.ConnectionGattListener;
 import com.deus_tech.ariasdk.calibrationBleService.CasInitListener;
 import com.deus_tech.ariasdk.calibrationBleService.CalibrationBleService;
+
+import org.greenrobot.eventbus.EventBus;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,7 +58,7 @@ public class Aria extends BroadcastReceiver implements BluetoothBroadcastListene
     private BluetoothGatt btGatt;
     private BluetoothGattCallback btGattCallback;
     //listener
-    private ArrayList<AriaConnectionListener> listeners;
+//    private ArrayList<AriaConnectionListener> listeners;
     //status
     private int status;
     //services
@@ -70,18 +77,18 @@ public class Aria extends BroadcastReceiver implements BluetoothBroadcastListene
     }//getInstance
 
 
-    public void addListener(AriaConnectionListener _listener){
-
-        listeners.add(_listener);
-
-    }//addListener
-
-
-    public void removeListener(AriaConnectionListener _listener){
-
-        listeners.remove(_listener);
-
-    }//removeListener
+//    public void addListener(AriaConnectionListener _listener){
+//
+//        listeners.add(_listener);
+//
+//    }//addListener
+//
+//
+//    public void removeListener(AriaConnectionListener _listener){
+//
+//        listeners.remove(_listener);
+//
+//    }//removeListener
 
 
     public CalibrationBleService getCas(){
@@ -216,7 +223,7 @@ public class Aria extends BroadcastReceiver implements BluetoothBroadcastListene
         //initBtBroadcastReceiver();
         initBtGattCallback();
 
-        listeners = new ArrayList<AriaConnectionListener>();
+//        listeners = new ArrayList<AriaConnectionListener>();
         status = Aria.STATUS_NONE;
 
     }//constructor
@@ -288,9 +295,10 @@ public class Aria extends BroadcastReceiver implements BluetoothBroadcastListene
 
         status = Aria.STATUS_DISCOVERING;
 
-        for(int i=0 ; i<listeners.size() ; i++){
-            listeners.get(i).onDiscoveryStarted();
-        }
+        EventBus.getDefault().post(new DiscoveryStartedEvent());
+//        for(int i=0 ; i<listeners.size() ; i++){
+//            listeners.get(i).onDiscoveryStarted();
+//        }
 
     }//onDiscoveryStarted
 
@@ -303,9 +311,10 @@ public class Aria extends BroadcastReceiver implements BluetoothBroadcastListene
             status = Aria.STATUS_FOUND;
         }
 
-        for (int i=0 ; i<listeners.size() ; i++) {
-            listeners.get(i).onDiscoveryFinished(device != null);
-        }
+        EventBus.getDefault().post(new DiscoveryFinishedEvent(device != null));
+//        for (int i=0 ; i<listeners.size() ; i++) {
+//            listeners.get(i).onDiscoveryFinished(device != null);
+//        }
 
         //connect();
 
@@ -324,9 +333,10 @@ public class Aria extends BroadcastReceiver implements BluetoothBroadcastListene
 
         status = Aria.STATUS_CONNECTED;
 
-        for(int i=0 ; i<listeners.size() ; i++){
-            listeners.get(i).onConnected();
-        }
+//        for(int i=0 ; i<listeners.size() ; i++){
+//            listeners.get(i).onConnected();
+//        }
+        EventBus.getDefault().post(new ConnectedEvent());
 
         for(int i=0 ; i<services.size() ; i++){
 
@@ -367,9 +377,10 @@ public class Aria extends BroadcastReceiver implements BluetoothBroadcastListene
 
         status = Aria.STATUS_NONE;
 
-        for(int i=0 ; i<listeners.size() ; i++){
-            listeners.get(i).onDisconnected();
-        }
+        EventBus.getDefault().post(new DisconnectedEvent());
+//        for(int i=0 ; i<listeners.size() ; i++){
+//            listeners.get(i).onDisconnected();
+//        }
 
     }//onDeviceDisconnected
 
@@ -389,9 +400,10 @@ public class Aria extends BroadcastReceiver implements BluetoothBroadcastListene
 
         status = Aria.STATUS_READY;
 
-        for(int i=0 ; i<listeners.size() ; i++){
-            listeners.get(i).onReady();
-        }
+        EventBus.getDefault().post(new ReadyEvent());
+//        for(int i=0 ; i<listeners.size() ; i++){
+//            listeners.get(i).onReady();
+//        }
 
     }//onArsInit
 
