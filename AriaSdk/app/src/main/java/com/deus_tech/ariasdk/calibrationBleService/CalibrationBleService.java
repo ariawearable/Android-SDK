@@ -7,7 +7,10 @@ import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import android.content.Context;
 
+import com.deus_tech.aria.CasEvents.CalibrationStepEvent;
 import com.deus_tech.ariasdk.R;
+
+import org.greenrobot.eventbus.EventBus;
 
 import java.util.ArrayList;
 import java.util.UUID;
@@ -532,6 +535,8 @@ public class CalibrationBleService implements CasGattListener{
                 gestureProtocol = OLD_PROTOCOL;
                 gestureStatus = CalibrationBleService.GESTURE_STATUS_OK;
 
+            EventBus.getDefault().post(new CalibrationStepEvent());
+
                 for(int i=0 ; i<casListeners.size() ; i++){
                     casListeners.get(i).onCalibrationStepDone(currentGestureIndex, currentGestureIteration);
                 }
@@ -568,6 +573,8 @@ public class CalibrationBleService implements CasGattListener{
                 currentGestureIteration++;
                 gestureProtocol = NEW_PROTOCOL;
 
+            EventBus.getDefault().post(new CalibrationStepEvent());
+
                 for (int i = 0; i < casListeners.size(); i++) {
                     casListeners.get(i).onCalibrationStepDone(currentGestureIndex, currentGestureIteration);
                 }
@@ -580,6 +587,8 @@ public class CalibrationBleService implements CasGattListener{
                 gestureStatus = CalibrationBleService.GESTURE_STATUS_OKGESTURE;
                 currentGestureIndex++;
                 currentGestureIteration = 1;
+
+            EventBus.getDefault().post(new CalibrationStepEvent());
 
                 for (int i = 0; i < casListeners.size(); i++) {
                     casListeners.get(i).onCalibrationStepDone(currentGestureIndex, currentGestureIteration);
