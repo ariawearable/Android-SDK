@@ -7,8 +7,8 @@ import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import android.content.Context;
 
-import com.deus_tech.aria.ArsEvents.BatteryEvent;
-import com.deus_tech.aria.ArsEvents.GestureEvent;
+import com.deus_tech.aria.arsEvents.BatteryEvent;
+import com.deus_tech.aria.arsEvents.GestureEvent;
 
 import org.greenrobot.eventbus.EventBus;
 

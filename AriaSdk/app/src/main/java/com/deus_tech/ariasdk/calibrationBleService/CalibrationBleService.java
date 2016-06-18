@@ -7,7 +7,7 @@ import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import android.content.Context;
 
-import com.deus_tech.aria.CasEvents.CalibrationStepEvent;
+import com.deus_tech.aria.casEvents.CalibrationStepEvent;
 import com.deus_tech.ariasdk.R;
 
 import org.greenrobot.eventbus.EventBus;
