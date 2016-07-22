@@ -13,7 +13,6 @@ import com.deus_tech.ariasdk.calibrationBleService.CasGattListener;
 import com.deus_tech.ariasdk.calibrationBleService.CalibrationBleService;
 
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class BluetoothGattCallback extends android.bluetooth.BluetoothGattCallback{
@@ -96,7 +95,7 @@ public class BluetoothGattCallback extends android.bluetooth.BluetoothGattCallba
 
                 calibrationListener.onCalibrationAttributeRead(characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT8, 0));
 
-            }else if(characteristic.getUuid().equals(CalibrationBleService.CALIBRATION_DATETIME_UUID) && calibrationListener != null){
+            }else if(characteristic.getUuid().equals(CalibrationBleService.CALIBRATION_ERROR_UUID) && calibrationListener != null){
 
                 calibrationListener.onCalibrationDatetimeRead(characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT8, 0));
 
@@ -131,7 +130,7 @@ public class BluetoothGattCallback extends android.bluetooth.BluetoothGattCallba
 
         if(status == BluetoothGatt.GATT_SUCCESS){
 
-            if(characteristic.getUuid().equals(CalibrationBleService.CALIBRATION_DATETIME_UUID) && calibrationListener != null){
+            if(characteristic.getUuid().equals(CalibrationBleService.CALIBRATION_ERROR_UUID) && calibrationListener != null){
 
                 calibrationListener.onCalibrationDatetimeWritten(characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT8,0));
 
@@ -178,6 +177,10 @@ public class BluetoothGattCallback extends android.bluetooth.BluetoothGattCallba
         }else if(characteristic.getUuid().equals(AriaBleService.ARIA_BATTERY_UUID) && arsListener != null){
 
             arsListener.onBatteryChanged(characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT8, 0));
+
+        }else if(characteristic.getUuid().equals(CalibrationBleService.CALIBRATION_MODE_UUID) && arsListener != null){
+
+            calibrationListener.onCalibrationModeChanged(characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT8, 0));
 
         }
 

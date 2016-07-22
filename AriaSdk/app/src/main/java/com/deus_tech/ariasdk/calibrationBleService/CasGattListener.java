@@ -49,5 +49,7 @@ public interface CasGattListener{
 
     void onGestureStatusNotifyChanged(int _value);
 
+    void onCalibrationModeChanged(int _value);
+
 
 }//CasGattListener

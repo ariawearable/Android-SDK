@@ -23,7 +23,7 @@ public class BluetoothScan {
 	private static final String TAG = "TAG";
 
 	private static final int LE_SCAN_PERIOD = 2000;
-	private static final int LE_SCAN_DEVICE_TIMEOUT = 4000;
+	private static final int LE_SCAN_DEVICE_TIMEOUT = 5000;
 
 	private ArrayList<BluetoothDevice> mDeviceArray =  new ArrayList<>();
 

@@ -6,7 +6,10 @@ import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import android.content.Context;
+import android.util.Log;
 
+import com.deus_tech.aria.CasEvents.CalibrationAttributeEvent;
+import com.deus_tech.aria.CasEvents.CalibrationStatusEvent;
 import com.deus_tech.aria.CasEvents.CalibrationStepEvent;
 import com.deus_tech.ariasdk.R;
 
@@ -21,11 +24,12 @@ public class CalibrationBleService implements CasGattListener{
     public final static UUID CALIBRATION_SERVICE_UUID = UUID.fromString("caa50000-2244-a09d-e968-5f43e74d0c5c");
     public final static UUID CCCD_UUID = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
     public final static UUID CALIBRATION_ATTRIBUTE_UUID = UUID.fromString("caa50001-2244-a09d-e968-5f43e74d0c5c");
-    public final static UUID CALIBRATION_DATETIME_UUID = UUID.fromString("caa50002-2244-a09d-e968-5f43e74d0c5c");
+    public final static UUID CALIBRATION_ERROR_UUID = UUID.fromString("caa50002-2244-a09d-e968-5f43e74d0c5c");
     public final static UUID CALIBRATION_MODE_UUID = UUID.fromString("caa50003-2244-a09d-e968-5f43e74d0c5c");
     public final static UUID SETTINGS_COMMAND_UUID = UUID.fromString("caa50004-2244-a09d-e968-5f43e74d0c5c");
     public final static UUID SETTINGS_DATA_UUID = UUID.fromString("caa50005-2244-a09d-e968-5f43e74d0c5c");
     public final static UUID GESTURE_STATUS_UUID = UUID.fromString("caa50006-2244-a09d-e968-5f43e74d0c5c");
+
 
 
     //settings command values
@@ -40,13 +44,15 @@ public class CalibrationBleService implements CasGattListener{
 
 
     //calibration mode values
-    // TODO: review CALIBRATION_MODE_NONE with the CALIBRATION_ATTRIBUTE in place of CALIBRATION_QUALITY
+
     public final static int CALIBRATION_MODE_NONE = 0;
     public final static int STATUS_CALIB = 1;
     public final static int STATUS_EXEC = 2;
     public final static int STATUS_SLEEP = 3;
     public final static int STATUS_IDLE = 0;
-    //public final static int CALIBRATION_MODE_SOFT = 2;
+    public final static int STATUS_PRECALIB_AMP = 4;
+    public final static int STATUS_PRECALIB_CAD = 5;
+    public final static int STATUS_PRECALIB_SIM = 6;
 
     //gesture status values
     public final static int GESTURE_STATUS_NONE = 0;
@@ -59,6 +65,9 @@ public class CalibrationBleService implements CasGattListener{
     public final static int GESTURE_STATUS_OKREPETITION = 7;
     public final static int GESTURE_STATUS_OKGESTURE = 8;
     public final static int GESTURE_STATUS_OKCALIBRATION = 9;
+    public final static int GESTURE_STATUS_OKCAMP = 10;
+    public final static int GESTURE_STATUS_OKCAD = 11;
+    public final static int GESTURE_STATUS_OKCSIM = 12;
 
     public final static int OLD_PROTOCOL = 0;
     public final static int NEW_PROTOCOL = 1;
@@ -69,7 +78,7 @@ public class CalibrationBleService implements CasGattListener{
     private BluetoothGattService btGattService;
     //characteristics
     private BluetoothGattCharacteristic calibrationAttributeChar;
-    private BluetoothGattCharacteristic calibrationDatetimeChar;
+    private BluetoothGattCharacteristic calibrationErrorChar;
     private BluetoothGattCharacteristic calibrationModeChar;
     private BluetoothGattCharacteristic settingsCommandChar;
     private BluetoothGattCharacteristic settingsDataChar;
@@ -141,13 +150,13 @@ public class CalibrationBleService implements CasGattListener{
         gestureProtocol=CalibrationBleService.NEW_PROTOCOL;
 
         calibrationAttributeChar = btGattService.getCharacteristic(CalibrationBleService.CALIBRATION_ATTRIBUTE_UUID);
-        calibrationDatetimeChar = btGattService.getCharacteristic(CalibrationBleService.CALIBRATION_DATETIME_UUID);
+        calibrationErrorChar = btGattService.getCharacteristic(CalibrationBleService.CALIBRATION_ERROR_UUID);
         calibrationModeChar = btGattService.getCharacteristic(CalibrationBleService.CALIBRATION_MODE_UUID);
         settingsCommandChar = btGattService.getCharacteristic(CalibrationBleService.SETTINGS_COMMAND_UUID);
         settingsDataChar = btGattService.getCharacteristic(CalibrationBleService.SETTINGS_DATA_UUID);
         gestureStatusChar = btGattService.getCharacteristic(CalibrationBleService.GESTURE_STATUS_UUID);
 
-        enableGestureStatusNotify(true);
+        //Once CalibrationAttribute gets active, the callback onCalibrationAttributeNotifyEnabled launches enableGestureStatusNotify(true);
         enableCalibrationAttributeNotify(true);
 
 
@@ -271,16 +280,16 @@ public class CalibrationBleService implements CasGattListener{
 
     //read
 
-    private void readCalibrationAttribute(){
-
+    public void readCalibrationAttribute(){
+        Log.d("debug_ble", "readCalibrationAttribute");
         btGatt.readCharacteristic(calibrationAttributeChar);
 
     }//readCalibrationAttribute
 
 
-    private void readCalibrationDatetime(){
+    public void readCalibrationError(){
 
-        btGatt.readCharacteristic(calibrationDatetimeChar);
+        btGatt.readCharacteristic(calibrationErrorChar);
 
     }//readCalibrationDatetime
 
@@ -317,37 +326,42 @@ public class CalibrationBleService implements CasGattListener{
 
     private void writeCalibrationDatetime(int _value){
 
-        calibrationDatetimeChar.setValue(_value, BluetoothGattCharacteristic.FORMAT_UINT8, 0);
-        btGatt.writeCharacteristic(calibrationDatetimeChar);
+        calibrationErrorChar.setValue(_value, BluetoothGattCharacteristic.FORMAT_UINT8, 0);
+        btGatt.writeCharacteristic(calibrationErrorChar);
 
     }//writeCalibrationDatetime
 
 
     private void writeCalibrationMode(int _mode){
-
+        calibrationStatus = _mode;
         calibrationModeChar.setValue(_mode, BluetoothGattCharacteristic.FORMAT_UINT8, 0);
         btGatt.writeCharacteristic(calibrationModeChar);
 
     }//writeCalibrationMode
 
     public void writeStatus_Exec(){
-        calibrationModeChar.setValue(STATUS_EXEC, BluetoothGattCharacteristic.FORMAT_UINT8, 0);
-        btGatt.writeCharacteristic(calibrationModeChar);
+        writeCalibrationMode(STATUS_EXEC);
     }
 
     public void writeStatus_Sleep(){
-        calibrationModeChar.setValue(STATUS_SLEEP, BluetoothGattCharacteristic.FORMAT_UINT8, 0);
-        btGatt.writeCharacteristic(calibrationModeChar);
+        writeCalibrationMode(STATUS_SLEEP);
     }
 
     public void writeStatus_Calib(){
-        calibrationModeChar.setValue(STATUS_CALIB, BluetoothGattCharacteristic.FORMAT_UINT8, 0);
-        btGatt.writeCharacteristic(calibrationModeChar);
+        writeCalibrationMode(STATUS_CALIB);
     }
 
     public void writeStatus_Idle(){
-        calibrationModeChar.setValue(STATUS_IDLE, BluetoothGattCharacteristic.FORMAT_UINT8, 0);
-        btGatt.writeCharacteristic(calibrationModeChar);
+        writeCalibrationMode(STATUS_IDLE);
+    }
+    public void writeStatus_Pre_Amp(){
+        writeCalibrationMode(STATUS_PRECALIB_AMP);
+    }
+    public void writeStatus_Pre_Cas(){
+        writeCalibrationMode(STATUS_PRECALIB_CAD);
+    }
+    public void writeStatus_Pre_Sim(){
+        writeCalibrationMode(STATUS_PRECALIB_SIM);
     }
 
     public void writeSettingsCommand(int _command){
@@ -373,10 +387,17 @@ public class CalibrationBleService implements CasGattListener{
 
     }//writeGestureStatus
 
+    public void writeGestureStatusStart(){
+
+        gestureStatusChar.setValue(GESTURE_STATUS_STARTED, BluetoothGattCharacteristic.FORMAT_UINT8, 0);
+        btGatt.writeCharacteristic(gestureStatusChar);
+
+    }//writeGestureStatus
+
 
     //enable notify
 
-    private void enableCalibrationAttributeNotify(boolean _isEnabled){
+    public void enableCalibrationAttributeNotify(boolean _isEnabled){
 
         btGatt.setCharacteristicNotification(calibrationAttributeChar, true);
 
@@ -391,6 +412,23 @@ public class CalibrationBleService implements CasGattListener{
         btGatt.writeDescriptor(cccd);
 
     }//enableCalibrationAttributeNotify
+
+
+    private void enableCalibrationModeNotify(boolean _isEnabled){
+
+        btGatt.setCharacteristicNotification(calibrationModeChar, true);
+
+        BluetoothGattDescriptor cccd = calibrationModeChar.getDescriptor(CalibrationBleService.CCCD_UUID);
+
+        if(_isEnabled){
+            cccd.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+        }else{
+            cccd.setValue(BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE);
+        }
+
+        btGatt.writeDescriptor(cccd);
+
+    }//enableCalibrationModeNotify
 
 
     private void enableGestureStatusNotify(boolean _isEnabled){
@@ -412,7 +450,9 @@ public class CalibrationBleService implements CasGattListener{
 
     //listener read
 
-    public void onCalibrationAttributeRead(int _value){}//onCalibrationAttributeRead
+    public void onCalibrationAttributeRead(int _value){
+        Log.d("debug_ble", "onCalibrationAttributeRead");
+    }//onCalibrationAttributeRead
 
 
     public void onCalibrationDatetimeRead(int _value){}//onCalibrationDatetimeRead
@@ -427,7 +467,11 @@ public class CalibrationBleService implements CasGattListener{
     public void onSettingsDataRead(int _value){}//onGestureIterationRead
 
 
-    public void onGestureStatusRead(int _value){}//onGestureStatusRead
+    public void onGestureStatusRead(int _value){
+        gestureStatus=_value;
+        EventBus.getDefault().post(new CalibrationStatusEvent(_value));
+    }//onGestureStatusRead
+
 
 
     //listener write
@@ -436,10 +480,8 @@ public class CalibrationBleService implements CasGattListener{
 
 
     public void onCalibrationModeWritten(int _value){
-
+        calibrationStatus=_value;
         if(_value == CalibrationBleService.STATUS_CALIB){
-
-            calibrationStatus = CalibrationBleService.STATUS_CALIB;
 
             for(int i=0 ; i<casListeners.size() ; i++){
                 casListeners.get(i).onCalibrationStarted();
@@ -496,14 +538,18 @@ public class CalibrationBleService implements CasGattListener{
 
     //listener enable notify
 
-    public void onCalibrationAttributeNotifyEnabled(){}//onCalibrationAttributeNotifyEnabled
+    public void onCalibrationAttributeNotifyEnabled(){
+        Log.d("debug_ble", "onCalibrationAttributeNotifyEnabled");
+        enableGestureStatusNotify(true);
+
+    }//onCalibrationAttributeNotifyEnabled
 
 
     public void onCalibrationAttributeNotifyDisabled(){}//onCalibrationAttributeNotifyDisabled
 
 
     public void onGestureStatusNotifyEnabled(){
-
+        Log.d("debug_ble", "onGestureStatusNotifyEnabled");
         for(int i=0 ; i<initListeners.size() ; i++){
             initListeners.get(i).onCalibrationInit();
         }
@@ -516,71 +562,82 @@ public class CalibrationBleService implements CasGattListener{
 
     //listener characteristics changed
 
-    public void onCalibrationAttributeChanged(int _value){}//onCalibrationAttributeChanged
+    public void onCalibrationAttributeChanged(int _value){
+        EventBus.getDefault().post(new CalibrationAttributeEvent(_value));
+        Log.d("ble_debug", "onCalibrationAttributeChanged");
+        //readCalibrationAttribute();
 
+    }//onCalibrationAttributeChanged
+
+
+
+    public void onCalibrationModeChanged(int _value){
+
+    }//onCalibrationModeChanged
 
     public void onGestureStatusNotifyChanged(int _value){
-
-        if(_value == CalibrationBleService.GESTURE_STATUS_RECORDING){
-          //  if (gestureStatus==CalibrationBleService.GESTURE_STATUS_STARTED) { //check it receives the started before recording
+        Log.d("ble_debug", "onGestureStatusNotifyChanged");
+        if (calibrationStatus==STATUS_CALIB) {
+            if (_value == CalibrationBleService.GESTURE_STATUS_RECORDING) {
+                //  if (gestureStatus==CalibrationBleService.GESTURE_STATUS_STARTED) { //check it receives the started before recording
                 gestureStatus = CalibrationBleService.GESTURE_STATUS_RECORDING;
 
                 for (int i = 0; i < casListeners.size(); i++) {
                     casListeners.get(i).onCalibrationStepRecording(currentGestureIndex, currentGestureIteration);
                 }
-           // }
-        }else if(_value == CalibrationBleService.GESTURE_STATUS_OK){
-           // if (gestureStatus ==  CalibrationBleService.GESTURE_STATUS_RECORDING) { //check it receives recording before ok gesture
+                // }
+            } else if (_value == CalibrationBleService.GESTURE_STATUS_OK) {
+                // if (gestureStatus ==  CalibrationBleService.GESTURE_STATUS_RECORDING) { //check it receives recording before ok gesture
 
                 gestureProtocol = OLD_PROTOCOL;
                 gestureStatus = CalibrationBleService.GESTURE_STATUS_OK;
 
-            EventBus.getDefault().post(new CalibrationStepEvent());
+                EventBus.getDefault().post(new CalibrationStepEvent());
 
-                for(int i=0 ; i<casListeners.size() ; i++){
+                for (int i = 0; i < casListeners.size(); i++) {
                     casListeners.get(i).onCalibrationStepDone(currentGestureIndex, currentGestureIteration);
                 }
 
-                if(this.currentGestureIndex == this.numGestures && this.currentGestureIteration == this.numRepetitions) {
+                if (this.currentGestureIndex == this.numGestures && this.currentGestureIteration == this.numRepetitions) {
 
                     stopCalibration();
 
 
                 }
-            //}
+                //}
 
-        }else if(_value == CalibrationBleService.GESTURE_STATUS_ERROR1){
+            } else if (_value == CalibrationBleService.GESTURE_STATUS_ERROR1) {
 
-            this.currentGestureIteration=1;
-            gestureStatus = CalibrationBleService.GESTURE_STATUS_ERROR1;
+                this.currentGestureIteration = 1;
+                gestureStatus = CalibrationBleService.GESTURE_STATUS_ERROR1;
 
-            for(int i=0 ; i<casListeners.size() ; i++){
-                casListeners.get(i).onCalibrationStepError(currentGestureIndex, currentGestureIteration);
-            }
+                for (int i = 0; i < casListeners.size(); i++) {
+                    casListeners.get(i).onCalibrationStepError(currentGestureIndex, currentGestureIteration);
+                }
 
-        }else if(_value == CalibrationBleService.GESTURE_STATUS_ERROR2){
+            } else if (_value == CalibrationBleService.GESTURE_STATUS_ERROR2) {
 
-            this.currentGestureIteration=0;
-            gestureStatus = CalibrationBleService.GESTURE_STATUS_ERROR2;
+                this.currentGestureIteration = 0;
+                gestureStatus = CalibrationBleService.GESTURE_STATUS_ERROR2;
 
-            for(int i=0 ; i<casListeners.size() ; i++){
-                casListeners.get(i).onCalibrationStepError(currentGestureIndex, currentGestureIteration);
-            }
+                for (int i = 0; i < casListeners.size(); i++) {
+                    casListeners.get(i).onCalibrationStepError(currentGestureIndex, currentGestureIteration);
+                }
 
-        }else if(_value == CalibrationBleService.GESTURE_STATUS_OKREPETITION) {
-         //   if (gestureStatus ==  CalibrationBleService.GESTURE_STATUS_RECORDING) { //check it receives recording before ok gesture
+            } else if (_value == CalibrationBleService.GESTURE_STATUS_OKREPETITION) {
+                //   if (gestureStatus ==  CalibrationBleService.GESTURE_STATUS_RECORDING) { //check it receives recording before ok gesture
                 gestureStatus = CalibrationBleService.GESTURE_STATUS_OKREPETITION;
                 currentGestureIteration++;
                 gestureProtocol = NEW_PROTOCOL;
 
-            EventBus.getDefault().post(new CalibrationStepEvent());
+                EventBus.getDefault().post(new CalibrationStepEvent());
 
                 for (int i = 0; i < casListeners.size(); i++) {
                     casListeners.get(i).onCalibrationStepDone(currentGestureIndex, currentGestureIteration);
                 }
-        //    }
-        }else if(_value == CalibrationBleService.GESTURE_STATUS_OKGESTURE) {
-         //   if (gestureStatus ==  CalibrationBleService.GESTURE_STATUS_RECORDING) { //check it receives recording before ok gesture
+                //    }
+            } else if (_value == CalibrationBleService.GESTURE_STATUS_OKGESTURE) {
+                //   if (gestureStatus ==  CalibrationBleService.GESTURE_STATUS_RECORDING) { //check it receives recording before ok gesture
 
                 gestureProtocol = NEW_PROTOCOL;
 
@@ -588,24 +645,29 @@ public class CalibrationBleService implements CasGattListener{
                 currentGestureIndex++;
                 currentGestureIteration = 1;
 
-            EventBus.getDefault().post(new CalibrationStepEvent());
+                EventBus.getDefault().post(new CalibrationStepEvent());
 
                 for (int i = 0; i < casListeners.size(); i++) {
                     casListeners.get(i).onCalibrationStepDone(currentGestureIndex, currentGestureIteration);
                 }
-        //    }
+                //    }
 
-        }else if(_value == CalibrationBleService.GESTURE_STATUS_OKCALIBRATION) {
-            gestureProtocol = NEW_PROTOCOL;
+            } else if (_value == CalibrationBleService.GESTURE_STATUS_OKCALIBRATION) {
+                gestureProtocol = NEW_PROTOCOL;
 
-            gestureStatus = CalibrationBleService.GESTURE_STATUS_OKCALIBRATION;
+                gestureStatus = CalibrationBleService.GESTURE_STATUS_OKCALIBRATION;
 
-            stopCalibration();
+                stopCalibration();
 
-            for (int i = 0; i < casListeners.size(); i++) {
-                casListeners.get(i).onCalibrationFinished();
+                for (int i = 0; i < casListeners.size(); i++) {
+                    casListeners.get(i).onCalibrationFinished();
+                }
+
+
             }
-
+        }else if(calibrationStatus == STATUS_PRECALIB_AMP){
+            Log.d("ble_debug", "onGestureStatusNotifyChanged and in PRECALIB_AMP");
+            EventBus.getDefault().post(new CalibrationStatusEvent(_value));
 
         }
 
