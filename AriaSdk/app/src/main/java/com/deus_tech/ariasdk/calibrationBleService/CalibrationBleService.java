@@ -611,12 +611,12 @@ public class CalibrationBleService implements CasGattListener{
                     casListeners.get(i).onCalibrationStepDone(currentGestureIndex, currentGestureIteration);
                 }
 
-                if (this.currentGestureIndex == this.numGestures+1 && this.currentGestureIteration == this.numRepetitions) {
-
-                    stopCalibration();
-
-
-                }
+//                if (this.currentGestureIndex == this.numGestures+1 && this.currentGestureIteration == this.numRepetitions) {
+//
+//                    stopCalibration();
+//
+//
+//                }
                 //}
 
             } else if (_value == CalibrationBleService.GESTURE_STATUS_ERROR1) {
