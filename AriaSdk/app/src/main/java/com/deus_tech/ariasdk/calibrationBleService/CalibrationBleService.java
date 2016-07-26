@@ -9,8 +9,8 @@ import android.content.Context;
 import android.util.Log;
 
 import com.deus_tech.aria.CasEvents.CalibrationAttributeEvent;
-import com.deus_tech.aria.CasEvents.CalibrationStatusEvent;
-import com.deus_tech.aria.CasEvents.CalibrationStepEvent;
+import com.deus_tech.aria.CasEvents.OnCalibrationWritten;
+import com.deus_tech.aria.CasEvents.GestureStatusEvent;
 import com.deus_tech.ariasdk.R;
 
 import org.greenrobot.eventbus.EventBus;
@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.UUID;
 
 public class CalibrationBleService implements CasGattListener{
-
+    private String TAG="CalibrationBleService";
     //UUID-s
     public final static UUID CALIBRATION_SERVICE_UUID = UUID.fromString("caa50000-2244-a09d-e968-5f43e74d0c5c");
     public final static UUID CCCD_UUID = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
@@ -205,10 +205,10 @@ public class CalibrationBleService implements CasGattListener{
 
     public void nextCalibrationStep(){
 
-        if ( gestureProtocol == NEW_PROTOCOL ) writeGestureStatus(CalibrationBleService.GESTURE_STATUS_STARTED);
+        if ( gestureProtocol == NEW_PROTOCOL ) writeGestureStatus(GESTURE_STATUS_STARTED);
         else {
             currentGestureIteration++;
-
+            Log.d(TAG, "nextCalibrationStep: Iter " + Integer.toString(currentGestureIteration));
             if (currentGestureIteration > numRepetitions) {
 
                 currentGestureIndex++;
@@ -315,7 +315,7 @@ public class CalibrationBleService implements CasGattListener{
     }//readGestureIteration
 
 
-    private void readGestureStatus(){
+    public void readGestureStatus(){
 
         btGatt.readCharacteristic(gestureStatusChar);
 
@@ -469,17 +469,21 @@ public class CalibrationBleService implements CasGattListener{
 
     public void onGestureStatusRead(int _value){
         gestureStatus=_value;
-        EventBus.getDefault().post(new CalibrationStatusEvent(_value));
+        EventBus.getDefault().post(new GestureStatusEvent(_value));
     }//onGestureStatusRead
 
 
 
     //listener write
 
-    public void onCalibrationDatetimeWritten(int _value){}//onCalibrationDatetimeWritten
+    public void onCalibrationDatetimeWritten(int _value){
+        Log.d(TAG, "onCalibrationDatetimeWritten: ");
+    }//onCalibrationDatetimeWritten
 
 
     public void onCalibrationModeWritten(int _value){
+        EventBus.getDefault().post(new OnCalibrationWritten(_value));
+        Log.d(TAG, "onCalibrationModeWritten: calibration mode scritto correttamente" + _value);
         calibrationStatus=_value;
         if(_value == CalibrationBleService.STATUS_CALIB){
 
@@ -488,6 +492,9 @@ public class CalibrationBleService implements CasGattListener{
             }
 
         }
+        if(_value == CalibrationBleService.STATUS_EXEC){
+        }
+
 //        else if(_value == CalibrationBleService.STATUS_EXEC){
 //
 //            calibrationStatus = CalibrationBleService.STATUS_EXEC;
@@ -502,6 +509,7 @@ public class CalibrationBleService implements CasGattListener{
 
 
     public void onSettingsCommandWritten(int _value){
+        Log.d(TAG, "onSettingsCommandWritten: ");
         if      (settingsCommand==SET_NUMBER_GESTURE) writeSettingsData(numGestures);
         else if (settingsCommand==SET_NUMBER_REPETITION)   writeSettingsData(numRepetitions);
 
@@ -509,6 +517,7 @@ public class CalibrationBleService implements CasGattListener{
 
 
     public void onSettingsDataWritten(int _value){
+        Log.d(TAG, "onSettingsDataWritten: ");
 //        DON'T use the callback like onSettingsCommandWritten() because the data is not mutually different among commands.
 
 //        if (settingsCommand == SET_NUMBER_GESTURE )
@@ -522,6 +531,7 @@ public class CalibrationBleService implements CasGattListener{
 
 
     public void onGestureStatusWritten(int _value){
+        Log.d(TAG, "onGestureStatusWritten: ");
 
         if(_value == CalibrationBleService.GESTURE_STATUS_STARTED){
 
@@ -576,8 +586,11 @@ public class CalibrationBleService implements CasGattListener{
     }//onCalibrationModeChanged
 
     public void onGestureStatusNotifyChanged(int _value){
-        Log.d("ble_debug", "onGestureStatusNotifyChanged");
+        Log.d("ble_debug", "onGestureStatusNotifyChanged " + Integer.toString(_value));
+
+        EventBus.getDefault().post(new GestureStatusEvent(_value));
         if (calibrationStatus==STATUS_CALIB) {
+            _value=_value%10;
             if (_value == CalibrationBleService.GESTURE_STATUS_RECORDING) {
                 //  if (gestureStatus==CalibrationBleService.GESTURE_STATUS_STARTED) { //check it receives the started before recording
                 gestureStatus = CalibrationBleService.GESTURE_STATUS_RECORDING;
@@ -588,17 +601,17 @@ public class CalibrationBleService implements CasGattListener{
                 // }
             } else if (_value == CalibrationBleService.GESTURE_STATUS_OK) {
                 // if (gestureStatus ==  CalibrationBleService.GESTURE_STATUS_RECORDING) { //check it receives recording before ok gesture
+                Log.d(TAG, "onGestureStatusNotifyChanged: Stiamo usando il VECCHIO protocollo");
 
                 gestureProtocol = OLD_PROTOCOL;
                 gestureStatus = CalibrationBleService.GESTURE_STATUS_OK;
 
-                EventBus.getDefault().post(new CalibrationStepEvent());
 
                 for (int i = 0; i < casListeners.size(); i++) {
                     casListeners.get(i).onCalibrationStepDone(currentGestureIndex, currentGestureIteration);
                 }
 
-                if (this.currentGestureIndex == this.numGestures && this.currentGestureIteration == this.numRepetitions) {
+                if (this.currentGestureIndex == this.numGestures+1 && this.currentGestureIteration == this.numRepetitions) {
 
                     stopCalibration();
 
@@ -625,12 +638,13 @@ public class CalibrationBleService implements CasGattListener{
                 }
 
             } else if (_value == CalibrationBleService.GESTURE_STATUS_OKREPETITION) {
+                Log.d(TAG, "onGestureStatusNotifyChanged: Stiamo usando il nuovo protocollo");
+
                 //   if (gestureStatus ==  CalibrationBleService.GESTURE_STATUS_RECORDING) { //check it receives recording before ok gesture
                 gestureStatus = CalibrationBleService.GESTURE_STATUS_OKREPETITION;
                 currentGestureIteration++;
                 gestureProtocol = NEW_PROTOCOL;
 
-                EventBus.getDefault().post(new CalibrationStepEvent());
 
                 for (int i = 0; i < casListeners.size(); i++) {
                     casListeners.get(i).onCalibrationStepDone(currentGestureIndex, currentGestureIteration);
@@ -638,18 +652,19 @@ public class CalibrationBleService implements CasGattListener{
                 //    }
             } else if (_value == CalibrationBleService.GESTURE_STATUS_OKGESTURE) {
                 //   if (gestureStatus ==  CalibrationBleService.GESTURE_STATUS_RECORDING) { //check it receives recording before ok gesture
-
+                Log.d(TAG, "onGestureStatusNotifyChanged: Stiamo usando il nuovo protocollo");
                 gestureProtocol = NEW_PROTOCOL;
 
                 gestureStatus = CalibrationBleService.GESTURE_STATUS_OKGESTURE;
                 currentGestureIndex++;
+
                 currentGestureIteration = 1;
 
-                EventBus.getDefault().post(new CalibrationStepEvent());
 
                 for (int i = 0; i < casListeners.size(); i++) {
                     casListeners.get(i).onCalibrationStepDone(currentGestureIndex, currentGestureIteration);
                 }
+
                 //    }
 
             } else if (_value == CalibrationBleService.GESTURE_STATUS_OKCALIBRATION) {
@@ -666,8 +681,7 @@ public class CalibrationBleService implements CasGattListener{
 
             }
         }else if(calibrationStatus == STATUS_PRECALIB_AMP){
-            Log.d("ble_debug", "onGestureStatusNotifyChanged and in PRECALIB_AMP");
-            EventBus.getDefault().post(new CalibrationStatusEvent(_value));
+            Log.d("ble_debug", "onGestureStatusNotifyChanged and in PRECALIB_AMP " + Integer.toString(_value));
 
         }
 

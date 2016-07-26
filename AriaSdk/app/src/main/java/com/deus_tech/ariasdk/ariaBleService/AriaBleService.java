@@ -6,6 +6,7 @@ import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import android.content.Context;
+import android.util.Log;
 
 import com.deus_tech.aria.ArsEvents.BatteryEvent;
 import com.deus_tech.aria.ArsEvents.GestureEvent;
@@ -16,6 +17,8 @@ import java.util.ArrayList;
 import java.util.UUID;
 
 public class AriaBleService implements ArsGattListener{
+    private final String TAG="AriaBleService";
+
 
     //UUID-s
     public final static UUID ARIA_SERVICE_UUID = UUID.fromString("e95d0000-b0de-1051-43b0-c7ab0ceffe1a");
@@ -141,7 +144,7 @@ public class AriaBleService implements ArsGattListener{
     //ArsGattListener - gesture
 
     public void onGestureNotifyEnabled(){
-
+        Log.d(TAG, "onGestureNotifyEnabled: è attivo");
         if(ariaBatteryChar != null){
             enableBatteryNotify(true);
         }
@@ -165,7 +168,7 @@ public class AriaBleService implements ArsGattListener{
 //            else if (_value == 81) _value = AriaBleService.GESTURE_UP;
 //            else if (_value == 79) _value = AriaBleService.GESTURE_DOWN;
 //            else if (_value == 80) _value = AriaBleService.GESTURE_BACK;
-//        }
+//          Log.d(TAG, "onGestureChanged: Gesto numero " + _value);      }
 
         EventBus.getDefault().post(new GestureEvent(_value));
 //        for(int i=0 ; i<arsListeners.size() ; i++){
