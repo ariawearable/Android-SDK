@@ -53,6 +53,7 @@ public class CalibrationBleService implements CasGattListener{
     public final static int STATUS_PRECALIB_AMP = 4;
     public final static int STATUS_PRECALIB_CAD = 5;
     public final static int STATUS_PRECALIB_SIM = 6;
+    public final static int STATUS_PRECALIB_DEB = 7;
 
     //gesture status values
     public final static int GESTURE_STATUS_NONE = 0;
@@ -360,6 +361,9 @@ public class CalibrationBleService implements CasGattListener{
     public void writeStatus_Pre_Cas(){
         writeCalibrationMode(STATUS_PRECALIB_CAD);
     }
+    public void writeStatus_Pre_Deb(){
+        writeCalibrationMode(STATUS_PRECALIB_DEB);
+    }
     public void writeStatus_Pre_Sim(){
         writeCalibrationMode(STATUS_PRECALIB_SIM);
     }
@@ -589,6 +593,8 @@ public class CalibrationBleService implements CasGattListener{
         Log.d("ble_debug", "onGestureStatusNotifyChanged " + Integer.toString(_value));
 
         EventBus.getDefault().post(new GestureStatusEvent(_value));
+
+        /*
         if (calibrationStatus==STATUS_CALIB) {
             _value=_value%10;
             if (_value == CalibrationBleService.GESTURE_STATUS_RECORDING) {
@@ -683,7 +689,8 @@ public class CalibrationBleService implements CasGattListener{
         }else if(calibrationStatus == STATUS_PRECALIB_AMP){
             Log.d("ble_debug", "onGestureStatusNotifyChanged and in PRECALIB_AMP " + Integer.toString(_value));
 
-        }
+        }*/
+
 
     }//onGestureStatusNotifyChanged
 
