@@ -358,7 +358,7 @@ public class CalibrationBleService implements CasGattListener{
     public void writeStatus_Pre_Amp(){
         writeCalibrationMode(STATUS_PRECALIB_AMP);
     }
-    public void writeStatus_Pre_Cas(){
+    public void writeStatus_Pre_Cad(){
         writeCalibrationMode(STATUS_PRECALIB_CAD);
     }
     public void writeStatus_Pre_Deb(){
