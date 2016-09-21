@@ -10,6 +10,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.util.Log;
 
 import com.deus_tech.aria.AriaConnectionEvents.ConnectedEvent;
 import com.deus_tech.aria.AriaConnectionEvents.DisconnectedEvent;
@@ -33,7 +34,7 @@ import java.util.List;
 
 
 public class Aria extends BroadcastReceiver implements BluetoothBroadcastListener, ConnectionGattListener, CasInitListener, ArsInitListener{
-
+    private String TAG="Aria";
 
     public final static String DEVICE_NAME = "Aria";
     public static String DEVICE_PROTOCOL = "7";
@@ -67,9 +68,9 @@ public class Aria extends BroadcastReceiver implements BluetoothBroadcastListene
 
 
     public static Aria getInstance(Context _context){
-
         if (Aria.instance == null){
             Aria.instance = new Aria(_context);
+
         }
 
         return Aria.instance;
@@ -92,33 +93,35 @@ public class Aria extends BroadcastReceiver implements BluetoothBroadcastListene
 
 
     public CalibrationBleService getCas(){
-
+        Log.d(TAG, "getCas: ");
         return cas;
 
     }//getCas
 
 
     public AriaBleService getArs(){
-
+        Log.d(TAG, "getArs: ");
         return ars;
 
     }//getArs
 
 
     public int getStatus(){
-
+        Log.d(TAG, "getStatus: ");
         return status;
 
     }//getStatus
 
 
     public void writeStatus_Sleep() {
+        Log.d(TAG, "writeStatus_Sleep: ");
         if (cas != null)
             cas.writeStatus_Sleep();
     }
 
 
     public void writeStatus_Exec() {
+        Log.d(TAG, "writeStatus_Exec: ");
         if (cas != null)
             cas.writeStatus_Exec();
     }
@@ -127,7 +130,7 @@ public class Aria extends BroadcastReceiver implements BluetoothBroadcastListene
 
 
     public void startDiscovery(){
-
+        Log.d(TAG, "startDiscovery: ");
         device = null;
 
         if (btAdapter != null && btAdapter.isEnabled() == false){
@@ -175,7 +178,7 @@ public class Aria extends BroadcastReceiver implements BluetoothBroadcastListene
 
 
     public void stopDiscovery(){
-
+        Log.d(TAG, "stopDiscovery: ");
         //btAdapter.cancelDiscovery();
 	    btScan.stopLeScan();
 
@@ -183,7 +186,7 @@ public class Aria extends BroadcastReceiver implements BluetoothBroadcastListene
 
 
     public void connect(){
-
+        Log.d(TAG, "connect: ");
         if(device != null){
 
             status = Aria.STATUS_CONNECTING;
@@ -195,7 +198,7 @@ public class Aria extends BroadcastReceiver implements BluetoothBroadcastListene
 
 
     public void disconnect(){
-
+        Log.d(TAG, "disconnect: ");
         if(btGatt != null){
             btGatt.disconnect();
         }
@@ -214,7 +217,7 @@ public class Aria extends BroadcastReceiver implements BluetoothBroadcastListene
     //private
 
     private Aria(Context _context){
-
+        Log.d(TAG, "Aria: ");
         context = _context;
 
         btManager = (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
@@ -261,7 +264,7 @@ public class Aria extends BroadcastReceiver implements BluetoothBroadcastListene
 
 
     private void initBtGattCallback(){
-
+        Log.d(TAG, "initBtGattCallback: ");
         btGattCallback = new BluetoothGattCallback();
         btGattCallback.setConnectionListener(this);
 
@@ -271,7 +274,7 @@ public class Aria extends BroadcastReceiver implements BluetoothBroadcastListene
     //BluetoothBroadcastListener
 
     public void onReceive(Context context, Intent intent){
-
+        Log.d(TAG, "onReceive: ");
         String action = intent.getAction();
         int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR);
 
@@ -292,7 +295,7 @@ public class Aria extends BroadcastReceiver implements BluetoothBroadcastListene
     //ConnectionGattListener
 
     public void onDiscoveryStarted(){
-
+        Log.d(TAG, "onDiscoveryStarted: ");
         status = Aria.STATUS_DISCOVERING;
 
         EventBus.getDefault().post(new DiscoveryStartedEvent());
@@ -304,7 +307,7 @@ public class Aria extends BroadcastReceiver implements BluetoothBroadcastListene
 
 
     public void onDiscoveryFinished() {
-
+        Log.d(TAG, "onDiscoveryFinished: ");
         if (device == null){
             status = Aria.STATUS_NONE;
         } else {
@@ -322,7 +325,7 @@ public class Aria extends BroadcastReceiver implements BluetoothBroadcastListene
 
 
     public void onDeviceFound(BluetoothDevice device){
-
+        Log.d(TAG, "onDeviceFound: ");
         this.device = device;
         stopDiscovery();
 
@@ -330,7 +333,7 @@ public class Aria extends BroadcastReceiver implements BluetoothBroadcastListene
 
 
     public void onDeviceConnected(List<BluetoothGattService> services){
-
+        Log.d(TAG, "onDeviceConnected: ");
         status = Aria.STATUS_CONNECTED;
 
 //        for(int i=0 ; i<listeners.size() ; i++){
@@ -374,7 +377,7 @@ public class Aria extends BroadcastReceiver implements BluetoothBroadcastListene
 
 
     public void onDeviceDisconnected(){
-
+        Log.d(TAG, "onDeviceDisconnected: ");
         status = Aria.STATUS_NONE;
 
         EventBus.getDefault().post(new DisconnectedEvent());
@@ -388,7 +391,7 @@ public class Aria extends BroadcastReceiver implements BluetoothBroadcastListene
     //CasInitListener
 
     public void onCalibrationInit(){
-
+        Log.d(TAG, "onCalibrationInit: ");
         ars.init();
 
     }//onCalibrationInit
@@ -397,7 +400,7 @@ public class Aria extends BroadcastReceiver implements BluetoothBroadcastListene
     //ArsInitListener
 
     public void onArsInit(){
-
+        Log.d(TAG, "onArsInit: ");
         status = Aria.STATUS_READY;
 
         EventBus.getDefault().post(new ReadyEvent());
