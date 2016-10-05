@@ -168,26 +168,26 @@ public class CalibrationBleService implements CasGattListener{
 
 
     public int getGesturesNumber(){
-        Log.d(TAG, "getGesturesNumber: ");
+        Log.d(TAG, "getGesturesNumber: " + Integer.toString(numGestures));
         return numGestures;
 
     }//getGesturesNumber
 
     public void setGesturesNumber(int val){
-        Log.d(TAG, "setGesturesNumber: ");
+        Log.d(TAG, "setGesturesNumber: " + Integer.toString(val));
 
         numGestures=val;
 
     }
 
     public int getIterationsNumber(){
-        Log.d(TAG, "getIterationsNumber: ");
+        Log.d(TAG, "getIterationsNumber: " + Integer.toString(numRepetitions));
         return numRepetitions;
 
     }//getIterationsNumber
 
     public void setIterationsNumber(int val){
-        Log.d(TAG, "setIterationsNumber: ");
+        Log.d(TAG, "setIterationsNumber: "+ Integer.toString(val));
         numRepetitions =val;
 
     }//getIterationsNumber
@@ -337,7 +337,7 @@ public class CalibrationBleService implements CasGattListener{
 
 
     private void writeCalibrationMode(int _mode){
-        Log.d(TAG, "writeCalibrationMode: ");
+        Log.d(TAG, "writeCalibrationMode: " + String.valueOf(_mode));
         calibrationStatus = _mode;
         calibrationModeChar.setValue(_mode, BluetoothGattCharacteristic.FORMAT_UINT8, 0);
         btGatt.writeCharacteristic(calibrationModeChar);
@@ -374,7 +374,7 @@ public class CalibrationBleService implements CasGattListener{
     }
 
     public void writeSettingsCommand(int _command){
-        Log.d(TAG, "writeSettingsCommand: ");
+        Log.d(TAG, "writeSettingsCommand: " + Integer.toString(_command));
         settingsCommand=_command;  //USE this for the callback onSettingsCommandWritten();
         settingsCommandChar.setValue(_command, BluetoothGattCharacteristic.FORMAT_UINT8, 0);
         btGatt.writeCharacteristic(settingsCommandChar);
@@ -383,7 +383,7 @@ public class CalibrationBleService implements CasGattListener{
 
 
     public void writeSettingsData(int _data){
-        Log.d(TAG, "writeSettingsData: ");
+        Log.d(TAG, "writeSettingsData: " + Integer.toString(_data));
         settingsData = _data;   //USE this for the callback onSettingsDataWritten();
         settingsDataChar.setValue(_data, BluetoothGattCharacteristic.FORMAT_UINT8, 0);
         btGatt.writeCharacteristic(settingsDataChar);
@@ -504,9 +504,12 @@ public class CalibrationBleService implements CasGattListener{
 
     public void onCalibrationModeWritten(int _value){
         Log.d(TAG, "onCalibrationModeWritten " + _value);
-        EventBus.getDefault().post(new OnCalibrationWritten(_value));
+        //This info is only used so far for the calibration therefore I move it to the calibration status only
+//        EventBus.getDefault().post(new OnCalibrationWritten(_value));
         calibrationStatus=_value;
         if(_value == CalibrationBleService.STATUS_CALIB){
+            EventBus.getDefault().post(new OnCalibrationWritten(_value));
+
             Log.d(TAG, "onCalibrationModeWritten: calibration mode scritto correttamente " + _value);
 
             for(int i=0 ; i<casListeners.size() ; i++){
@@ -533,7 +536,7 @@ public class CalibrationBleService implements CasGattListener{
 
 
     public void onSettingsCommandWritten(int _value){
-        Log.d(TAG, "onSettingsCommandWritten: ");
+        Log.d(TAG, "onSettingsCommandWritten: " + Integer.toString(_value));
         if      (settingsCommand==SET_NUMBER_GESTURE) writeSettingsData(numGestures);
         else if (settingsCommand==SET_NUMBER_REPETITION)   writeSettingsData(numRepetitions);
 
@@ -541,7 +544,7 @@ public class CalibrationBleService implements CasGattListener{
 
 
     public void onSettingsDataWritten(int _value){
-        Log.d(TAG, "onSettingsDataWritten: ");
+        Log.d(TAG, "onSettingsDataWritten: [does nothing is just a callback] " + Integer.toString(_value));
 //        DON'T use the callback like onSettingsCommandWritten() because the data is not mutually different among commands.
 
 //        if (settingsCommand == SET_NUMBER_GESTURE )
@@ -725,8 +728,8 @@ public class CalibrationBleService implements CasGattListener{
         writeSettingsCommand(SET_NUMBER_GESTURE);
     }
 
-    public void setRepetition(int value){
-        Log.d(TAG, "setRepetition: ");
+    public void setRepetition(Integer value){
+        Log.d(TAG, "setRepetition: " + value.toString());
         setIterationsNumber(value);
         writeSettingsCommand(SET_NUMBER_REPETITION);
     }
